@@ -15,7 +15,7 @@ local gamescripts = {
     [127742093697776] = "https://api.luarmor.net/files/v3/loaders/5b8bcc342eb805a81c7a5772b5d5c370.lua",
     [16732694052]     = "https://api.luarmor.net/files/v3/loaders/ba120508e61c7cd87899ec69bc544788.lua",
     -- // Build ur base removed.
-    [18687417158]     = "https://api.luarmor.net/files/v3/loaders/c8bbebed769379dd1b3f8e1840c9d3c2.lua",
+    [18687417158]     = "https://api.luarmor.net/files/v3/loaders/3aa92a34a03f3c1010587a07903446d4.lua",
     -- // Violence district removed.
     -- // Build a Plane removed. 
     
