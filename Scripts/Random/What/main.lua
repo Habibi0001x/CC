@@ -1,11 +1,21 @@
+# Advanced Roblox UI Library v4.0
+
+Fixed dialog bug and added all requested features including themes, multi-select dropdowns, element descriptions, and dividers.
+
+```lua
 --[[
-    Advanced UI Library v3.0
+    Advanced UI Library v4.0
+    
     Features:
     - Mobile Detection & Support
-    - Buttons, Dropdowns, Toggles, Sliders, ColorPickers, Inputs, Sections, Labels, Paragraphs
+    - Buttons, Dropdowns (Single & Multi), Toggles, Sliders, ColorPickers, Inputs
+    - Sections, Labels, Paragraphs, Dividers
+    - Element Descriptions
     - Lockable Elements
     - Transparency Settings
     - Resizable Windows
+    - Multiple Themes (Dark, Light, Sky Blue, Ocean, Purple, Rose, Forest, Sunset)
+    - Tab & Section Dividers
     - Uses CoreGui with cloneref for undetection
     - Lucide Icon Support
 ]]
@@ -31,27 +41,161 @@ Library.__index = Library
 -- Mobile Detection
 local IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled
 
--- Configuration
+-- Themes
+local Themes = {
+    Dark = {
+        MainColor = Color3.fromRGB(25, 25, 35),
+        SecondaryColor = Color3.fromRGB(35, 35, 50),
+        AccentColor = Color3.fromRGB(88, 101, 242),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(180, 180, 190),
+        BorderColor = Color3.fromRGB(50, 50, 65),
+        ToggleOnColor = Color3.fromRGB(88, 101, 242),
+        ToggleOffColor = Color3.fromRGB(60, 60, 75),
+        LockedColor = Color3.fromRGB(80, 80, 90),
+        LockedTextColor = Color3.fromRGB(120, 120, 130),
+        DividerColor = Color3.fromRGB(60, 60, 75)
+    },
+    Light = {
+        MainColor = Color3.fromRGB(245, 245, 250),
+        SecondaryColor = Color3.fromRGB(235, 235, 240),
+        AccentColor = Color3.fromRGB(88, 101, 242),
+        TextColor = Color3.fromRGB(30, 30, 40),
+        SecondaryTextColor = Color3.fromRGB(100, 100, 120),
+        BorderColor = Color3.fromRGB(200, 200, 210),
+        ToggleOnColor = Color3.fromRGB(88, 101, 242),
+        ToggleOffColor = Color3.fromRGB(180, 180, 190),
+        LockedColor = Color3.fromRGB(200, 200, 210),
+        LockedTextColor = Color3.fromRGB(150, 150, 160),
+        DividerColor = Color3.fromRGB(200, 200, 210)
+    },
+    SkyBlue = {
+        MainColor = Color3.fromRGB(20, 30, 45),
+        SecondaryColor = Color3.fromRGB(30, 45, 65),
+        AccentColor = Color3.fromRGB(65, 165, 245),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(170, 200, 220),
+        BorderColor = Color3.fromRGB(50, 75, 100),
+        ToggleOnColor = Color3.fromRGB(65, 165, 245),
+        ToggleOffColor = Color3.fromRGB(50, 70, 90),
+        LockedColor = Color3.fromRGB(60, 80, 100),
+        LockedTextColor = Color3.fromRGB(100, 130, 160),
+        DividerColor = Color3.fromRGB(50, 75, 100)
+    },
+    Ocean = {
+        MainColor = Color3.fromRGB(15, 30, 40),
+        SecondaryColor = Color3.fromRGB(20, 45, 60),
+        AccentColor = Color3.fromRGB(0, 180, 180),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(150, 200, 200),
+        BorderColor = Color3.fromRGB(30, 70, 85),
+        ToggleOnColor = Color3.fromRGB(0, 180, 180),
+        ToggleOffColor = Color3.fromRGB(40, 70, 80),
+        LockedColor = Color3.fromRGB(50, 80, 90),
+        LockedTextColor = Color3.fromRGB(80, 130, 140),
+        DividerColor = Color3.fromRGB(30, 70, 85)
+    },
+    Purple = {
+        MainColor = Color3.fromRGB(30, 20, 40),
+        SecondaryColor = Color3.fromRGB(45, 30, 60),
+        AccentColor = Color3.fromRGB(160, 90, 220),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(200, 180, 220),
+        BorderColor = Color3.fromRGB(70, 50, 90),
+        ToggleOnColor = Color3.fromRGB(160, 90, 220),
+        ToggleOffColor = Color3.fromRGB(60, 45, 75),
+        LockedColor = Color3.fromRGB(70, 55, 85),
+        LockedTextColor = Color3.fromRGB(120, 100, 140),
+        DividerColor = Color3.fromRGB(70, 50, 90)
+    },
+    Rose = {
+        MainColor = Color3.fromRGB(35, 20, 25),
+        SecondaryColor = Color3.fromRGB(50, 30, 40),
+        AccentColor = Color3.fromRGB(230, 80, 120),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(220, 180, 190),
+        BorderColor = Color3.fromRGB(80, 50, 60),
+        ToggleOnColor = Color3.fromRGB(230, 80, 120),
+        ToggleOffColor = Color3.fromRGB(70, 45, 55),
+        LockedColor = Color3.fromRGB(80, 55, 65),
+        LockedTextColor = Color3.fromRGB(140, 100, 110),
+        DividerColor = Color3.fromRGB(80, 50, 60)
+    },
+    Forest = {
+        MainColor = Color3.fromRGB(20, 30, 20),
+        SecondaryColor = Color3.fromRGB(30, 45, 30),
+        AccentColor = Color3.fromRGB(80, 180, 80),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(180, 210, 180),
+        BorderColor = Color3.fromRGB(50, 75, 50),
+        ToggleOnColor = Color3.fromRGB(80, 180, 80),
+        ToggleOffColor = Color3.fromRGB(50, 70, 50),
+        LockedColor = Color3.fromRGB(60, 80, 60),
+        LockedTextColor = Color3.fromRGB(100, 140, 100),
+        DividerColor = Color3.fromRGB(50, 75, 50)
+    },
+    Sunset = {
+        MainColor = Color3.fromRGB(35, 25, 20),
+        SecondaryColor = Color3.fromRGB(50, 35, 30),
+        AccentColor = Color3.fromRGB(255, 120, 50),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(220, 190, 170),
+        BorderColor = Color3.fromRGB(80, 60, 50),
+        ToggleOnColor = Color3.fromRGB(255, 120, 50),
+        ToggleOffColor = Color3.fromRGB(70, 55, 45),
+        LockedColor = Color3.fromRGB(80, 65, 55),
+        LockedTextColor = Color3.fromRGB(140, 115, 100),
+        DividerColor = Color3.fromRGB(80, 60, 50)
+    },
+    Midnight = {
+        MainColor = Color3.fromRGB(10, 10, 20),
+        SecondaryColor = Color3.fromRGB(20, 20, 35),
+        AccentColor = Color3.fromRGB(100, 100, 255),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(150, 150, 180),
+        BorderColor = Color3.fromRGB(40, 40, 60),
+        ToggleOnColor = Color3.fromRGB(100, 100, 255),
+        ToggleOffColor = Color3.fromRGB(40, 40, 55),
+        LockedColor = Color3.fromRGB(50, 50, 65),
+        LockedTextColor = Color3.fromRGB(90, 90, 110),
+        DividerColor = Color3.fromRGB(40, 40, 60)
+    },
+    Aqua = {
+        MainColor = Color3.fromRGB(15, 35, 35),
+        SecondaryColor = Color3.fromRGB(25, 50, 50),
+        AccentColor = Color3.fromRGB(0, 220, 200),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(150, 220, 210),
+        BorderColor = Color3.fromRGB(40, 80, 75),
+        ToggleOnColor = Color3.fromRGB(0, 220, 200),
+        ToggleOffColor = Color3.fromRGB(35, 65, 60),
+        LockedColor = Color3.fromRGB(45, 75, 70),
+        LockedTextColor = Color3.fromRGB(80, 140, 130),
+        DividerColor = Color3.fromRGB(40, 80, 75)
+    }
+}
+
+-- Default Configuration
 local Config = {
-    MainColor = Color3.fromRGB(25, 25, 35),
-    SecondaryColor = Color3.fromRGB(35, 35, 50),
-    AccentColor = Color3.fromRGB(88, 101, 242),
-    TextColor = Color3.fromRGB(255, 255, 255),
-    SecondaryTextColor = Color3.fromRGB(180, 180, 190),
-    BorderColor = Color3.fromRGB(50, 50, 65),
-    ToggleOnColor = Color3.fromRGB(88, 101, 242),
-    ToggleOffColor = Color3.fromRGB(60, 60, 75),
-    LockedColor = Color3.fromRGB(80, 80, 90),
-    LockedTextColor = Color3.fromRGB(120, 120, 130),
+    Theme = "Dark",
     Font = Enum.Font.GothamMedium,
     TweenSpeed = 0.2,
-    -- Transparency Settings
     Transparent = false,
     TransparencyValue = 0.3,
-    -- Mobile Settings
     MobileScale = 1.1,
     MobileTouchSize = 44
 }
+
+-- Apply theme to config
+local function ApplyTheme(themeName)
+    local theme = Themes[themeName] or Themes.Dark
+    for key, value in pairs(theme) do
+        Config[key] = value
+    end
+    Config.Theme = themeName
+end
+
+ApplyTheme("Dark")
 
 -- Lucide Icons
 local LucideIcons = {
@@ -97,7 +241,15 @@ local LucideIcons = {
     Crosshair = "rbxassetid://7733673041",
     Navigation = "rbxassetid://7733960981",
     Resize = "rbxassetid://7734042553",
-    Grip = "rbxassetid://7733717447"
+    Grip = "rbxassetid://7733717447",
+    Info = "rbxassetid://7733697276",
+    AlertCircle = "rbxassetid://7733658504",
+    CheckCircle = "rbxassetid://7733715076",
+    XCircle = "rbxassetid://7743878857",
+    Palette = "rbxassetid://7733697276",
+    Sliders = "rbxassetid://7734053495",
+    MoreHorizontal = "rbxassetid://7733717447",
+    Minus = "rbxassetid://7733717447"
 }
 
 -- Utility Functions
@@ -136,12 +288,12 @@ local function AddStroke(instance, color, thickness)
     })
 end
 
-local function AddPadding(instance, padding)
+local function AddPadding(instance, top, bottom, left, right)
     return Create("UIPadding", {
-        PaddingTop = UDim.new(0, padding),
-        PaddingBottom = UDim.new(0, padding),
-        PaddingLeft = UDim.new(0, padding),
-        PaddingRight = UDim.new(0, padding),
+        PaddingTop = UDim.new(0, top or 0),
+        PaddingBottom = UDim.new(0, bottom or 0),
+        PaddingLeft = UDim.new(0, left or 0),
+        PaddingRight = UDim.new(0, right or 0),
         Parent = instance
     })
 end
@@ -165,18 +317,6 @@ end
 
 local function GetIcon(iconName)
     return LucideIcons[iconName] or LucideIcons.Circle
-end
-
--- Apply transparency to a frame
-local function ApplyTransparency(frame, isTransparent, transparencyValue)
-    if isTransparent then
-        if frame:IsA("Frame") or frame:IsA("TextButton") or frame:IsA("ScrollingFrame") then
-            local currentTransparency = frame.BackgroundTransparency
-            if currentTransparency < 1 then
-                frame.BackgroundTransparency = math.max(currentTransparency, transparencyValue)
-            end
-        end
-    end
 end
 
 -- Dragging Function (Enhanced for Mobile)
@@ -307,18 +447,43 @@ local function CreateLockOverlay(parent)
     return overlay
 end
 
+-- Create Description Label
+local function CreateDescription(parent, text, yOffset)
+    if not text or text == "" then return nil end
+    
+    local DescLabel = Create("TextLabel", {
+        Name = "Description",
+        BackgroundTransparency = 1,
+        Text = text,
+        TextColor3 = Config.SecondaryTextColor,
+        Font = Config.Font,
+        TextSize = IsMobile and 11 or 10,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextWrapped = true,
+        Position = UDim2.new(0, 0, 0, yOffset),
+        Size = UDim2.new(1, 0, 0, IsMobile and 16 or 14),
+        Parent = parent
+    })
+    
+    return DescLabel
+end
+
 -- Main Library Functions
 function Library:CreateWindow(options)
     options = options or {}
     local title = options.Title or "UI Library"
     local description = options.Description or ""
     local icon = options.Icon or "Zap"
+    local theme = options.Theme or "Dark"
     local transparent = options.Transparent or false
     local transparencyValue = options.TransparencyValue or 0.3
     local size = options.Size or (IsMobile and UDim2.new(0, 420, 0, 350) or UDim2.new(0, 550, 0, 400))
     local position = options.Position or UDim2.new(0.5, 0, 0.5, 0)
     local minSize = options.MinSize or Vector2.new(400, 300)
     local maxSize = options.MaxSize or Vector2.new(900, 700)
+    
+    -- Apply theme
+    ApplyTheme(theme)
     
     -- Update config
     Config.Transparent = transparent
@@ -597,7 +762,7 @@ function Library:CreateWindow(options)
         Tween(CloseBtn, {BackgroundColor3 = Color3.fromRGB(220, 60, 60)})
     end)
     
-    -- Mobile Toggle Button (floating button to show/hide UI)
+    -- Mobile Toggle Button
     local MobileToggle
     if IsMobile then
         MobileToggle = Create("TextButton", {
@@ -639,6 +804,51 @@ function Library:CreateWindow(options)
     Window.MainFrame = MainFrame
     Window.Config = Config
     Window.IsMobile = IsMobile
+    Window.ThemeObjects = {} -- Store objects to update on theme change
+    
+    -- Set Theme
+    function Window:SetTheme(themeName)
+        if not Themes[themeName] then return end
+        
+        ApplyTheme(themeName)
+        
+        -- Update main UI elements
+        local trans = Config.Transparent and Config.TransparencyValue or 0
+        
+        Tween(MainFrame, {BackgroundColor3 = Config.MainColor, BackgroundTransparency = trans})
+        Tween(TitleBar, {BackgroundColor3 = Config.SecondaryColor, BackgroundTransparency = trans})
+        Tween(TitleBarFix, {BackgroundColor3 = Config.SecondaryColor, BackgroundTransparency = trans})
+        Tween(TabContainer, {BackgroundColor3 = Config.SecondaryColor, BackgroundTransparency = trans})
+        Tween(ContentContainer, {BackgroundColor3 = Config.SecondaryColor, BackgroundTransparency = trans})
+        Tween(IconImage, {ImageColor3 = Config.AccentColor})
+        Tween(TitleLabel, {TextColor3 = Config.TextColor})
+        Tween(DescLabel, {TextColor3 = Config.SecondaryTextColor})
+        Tween(MinimizeBtn, {BackgroundColor3 = Config.BorderColor})
+        Tween(MinimizeIcon, {ImageColor3 = Config.TextColor})
+        Tween(CloseIcon, {ImageColor3 = Config.TextColor})
+        Tween(ResizeHandle, {BackgroundColor3 = Config.BorderColor})
+        Tween(ResizeIcon, {ImageColor3 = Config.SecondaryTextColor})
+        
+        if MobileToggle then
+            Tween(MobileToggle, {BackgroundColor3 = Config.AccentColor})
+        end
+        
+        -- Update all registered theme objects
+        for _, obj in pairs(Window.ThemeObjects) do
+            if obj.UpdateTheme then
+                obj:UpdateTheme()
+            end
+        end
+    end
+    
+    -- Get available themes
+    function Window:GetThemes()
+        local themeNames = {}
+        for name, _ in pairs(Themes) do
+            table.insert(themeNames, name)
+        end
+        return themeNames
+    end
     
     -- Set Transparency
     function Window:SetTransparency(enabled, value)
@@ -654,6 +864,43 @@ function Library:CreateWindow(options)
         Tween(ContentContainer, {BackgroundTransparency = transparency})
     end
     
+    -- Create Tab Divider
+    function Window:CreateTabDivider(options)
+        options = options or {}
+        local text = options.Text or ""
+        
+        local DividerFrame = Create("Frame", {
+            Name = "TabDivider",
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 0, text ~= "" and 25 or 15),
+            Parent = TabScroll
+        })
+        
+        if text ~= "" then
+            local DividerLabel = Create("TextLabel", {
+                BackgroundTransparency = 1,
+                Text = text,
+                TextColor3 = Config.SecondaryTextColor,
+                Font = Enum.Font.GothamBold,
+                TextSize = IsMobile and 11 or 10,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Position = UDim2.new(0, 5, 0, 0),
+                Size = UDim2.new(1, -10, 0, 15),
+                Parent = DividerFrame
+            })
+        end
+        
+        local DividerLine = Create("Frame", {
+            BackgroundColor3 = Config.DividerColor,
+            Size = UDim2.new(1, -10, 0, 1),
+            Position = UDim2.new(0, 5, text ~= "" and 0.7 or 0.5, 0),
+            Parent = DividerFrame
+        })
+        
+        return DividerFrame
+    end
+    
+    -- Create Tab
     function Window:CreateTab(options)
         options = options or {}
         local tabName = options.Name or "Tab"
@@ -756,10 +1003,49 @@ function Library:CreateWindow(options)
             SelectTab()
         end
         
+        -- Create Section Divider
+        function Tab:CreateDivider(options)
+            options = options or {}
+            local text = options.Text or ""
+            
+            local DividerFrame = Create("Frame", {
+                Name = "Divider",
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 0, text ~= "" and 30 or 20),
+                Parent = ContentPage
+            })
+            
+            local DividerLine = Create("Frame", {
+                BackgroundColor3 = Config.DividerColor,
+                Size = UDim2.new(1, 0, 0, 1),
+                Position = UDim2.new(0, 0, 0.5, 0),
+                Parent = DividerFrame
+            })
+            
+            if text ~= "" then
+                local DividerLabel = Create("TextLabel", {
+                    BackgroundColor3 = Config.SecondaryColor,
+                    Text = "  " .. text .. "  ",
+                    TextColor3 = Config.SecondaryTextColor,
+                    Font = Enum.Font.GothamBold,
+                    TextSize = IsMobile and 12 or 11,
+                    Position = UDim2.new(0.5, 0, 0.5, 0),
+                    AnchorPoint = Vector2.new(0.5, 0.5),
+                    Size = UDim2.new(0, 0, 0, 20),
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    Parent = DividerFrame
+                })
+                AddCorner(DividerLabel, 4)
+            end
+            
+            return DividerFrame
+        end
+        
         -- Section creator
         function Tab:CreateSection(options)
             options = options or {}
             local sectionName = options.Name or "Section"
+            local sectionDesc = options.Description or ""
             
             local SectionFrame = Create("Frame", {
                 Name = sectionName,
@@ -772,10 +1058,12 @@ function Library:CreateWindow(options)
             AddCorner(SectionFrame, 8)
             AddStroke(SectionFrame, Config.BorderColor, 1)
             
+            local headerHeight = sectionDesc ~= "" and (IsMobile and 50 or 45) or (IsMobile and 40 or 35)
+            
             local SectionHeader = Create("Frame", {
                 Name = "Header",
                 BackgroundTransparency = 1,
-                Size = UDim2.new(1, 0, 0, IsMobile and 40 or 35),
+                Size = UDim2.new(1, 0, 0, headerHeight),
                 Parent = SectionFrame
             })
             
@@ -786,16 +1074,30 @@ function Library:CreateWindow(options)
                 Font = Enum.Font.GothamBold,
                 TextSize = IsMobile and 15 or 14,
                 TextXAlignment = Enum.TextXAlignment.Left,
-                Position = UDim2.new(0, 12, 0, 0),
-                Size = UDim2.new(1, -24, 1, 0),
+                Position = UDim2.new(0, 12, 0, 8),
+                Size = UDim2.new(1, -24, 0, 20),
                 Parent = SectionHeader
             })
+            
+            if sectionDesc ~= "" then
+                local SectionDescLabel = Create("TextLabel", {
+                    BackgroundTransparency = 1,
+                    Text = sectionDesc,
+                    TextColor3 = Config.SecondaryTextColor,
+                    Font = Config.Font,
+                    TextSize = IsMobile and 12 or 11,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    Position = UDim2.new(0, 12, 0, 26),
+                    Size = UDim2.new(1, -24, 0, 16),
+                    Parent = SectionHeader
+                })
+            end
             
             local SectionContent = Create("Frame", {
                 Name = "Content",
                 BackgroundTransparency = 1,
                 Size = UDim2.new(1, -20, 0, 0),
-                Position = UDim2.new(0, 10, 0, IsMobile and 40 or 35),
+                Position = UDim2.new(0, 10, 0, headerHeight),
                 AutomaticSize = Enum.AutomaticSize.Y,
                 Parent = SectionFrame
             })
@@ -812,15 +1114,57 @@ function Library:CreateWindow(options)
             
             local Section = {}
             
+            -- Create Divider within section
+            function Section:CreateDivider(options)
+                options = options or {}
+                local text = options.Text or ""
+                
+                local DividerFrame = Create("Frame", {
+                    Name = "SectionDivider",
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1, 0, 0, text ~= "" and 25 or 15),
+                    Parent = SectionContent
+                })
+                
+                local DividerLine = Create("Frame", {
+                    BackgroundColor3 = Config.DividerColor,
+                    Size = UDim2.new(1, 0, 0, 1),
+                    Position = UDim2.new(0, 0, 0.5, 0),
+                    Parent = DividerFrame
+                })
+                
+                if text ~= "" then
+                    local DividerLabel = Create("TextLabel", {
+                        BackgroundColor3 = Config.MainColor,
+                        Text = "  " .. text .. "  ",
+                        TextColor3 = Config.SecondaryTextColor,
+                        Font = Config.Font,
+                        TextSize = IsMobile and 11 or 10,
+                        Position = UDim2.new(0, 10, 0.5, 0),
+                        AnchorPoint = Vector2.new(0, 0.5),
+                        Size = UDim2.new(0, 0, 0, 18),
+                        AutomaticSize = Enum.AutomaticSize.X,
+                        Parent = DividerFrame
+                    })
+                    AddCorner(DividerLabel, 4)
+                end
+                
+                return DividerFrame
+            end
+            
             -- Label
             function Section:CreateLabel(options)
                 options = options or {}
                 local text = options.Text or "Label"
                 local icon = options.Icon
+                local description = options.Description or ""
+                
+                local hasDesc = description ~= ""
+                local frameHeight = hasDesc and (IsMobile and 40 or 35) or (IsMobile and 30 or 25)
                 
                 local LabelFrame = Create("Frame", {
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, IsMobile and 30 or 25),
+                    Size = UDim2.new(1, 0, 0, frameHeight),
                     Parent = SectionContent
                 })
                 
@@ -831,7 +1175,7 @@ function Library:CreateWindow(options)
                         Image = GetIcon(icon),
                         ImageColor3 = Config.AccentColor,
                         Size = UDim2.new(0, IsMobile and 20 or 16, 0, IsMobile and 20 or 16),
-                        Position = UDim2.new(0, 0, 0.5, IsMobile and -10 or -8),
+                        Position = UDim2.new(0, 0, 0, hasDesc and 2 or (IsMobile and 5 or 4)),
                         Parent = LabelFrame
                     })
                     xOffset = IsMobile and 26 or 22
@@ -845,9 +1189,13 @@ function Library:CreateWindow(options)
                     TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Position = UDim2.new(0, xOffset, 0, 0),
-                    Size = UDim2.new(1, -xOffset, 1, 0),
+                    Size = UDim2.new(1, -xOffset, 0, IsMobile and 22 or 18),
                     Parent = LabelFrame
                 })
+                
+                if hasDesc then
+                    CreateDescription(LabelFrame, description, IsMobile and 22 or 18)
+                end
                 
                 local LabelObj = {}
                 function LabelObj:SetText(newText)
@@ -913,18 +1261,22 @@ function Library:CreateWindow(options)
                 return ParagraphObj
             end
             
-            -- Button (with Lock support)
+            -- Button (with Lock support and Description)
             function Section:CreateButton(options)
                 options = options or {}
                 local text = options.Text or "Button"
                 local icon = options.Icon
+                local description = options.Description or ""
                 local callback = options.Callback or function() end
                 local locked = options.Locked or false
                 local lockedText = options.LockedText or "Locked"
                 
+                local hasDesc = description ~= ""
+                local frameHeight = hasDesc and (IsMobile and 58 or 50) or (IsMobile and 44 or 35)
+                
                 local ButtonFrame = Create("TextButton", {
                     BackgroundColor3 = locked and Config.LockedColor or Config.AccentColor,
-                    Size = UDim2.new(1, 0, 0, IsMobile and 44 or 35),
+                    Size = UDim2.new(1, 0, 0, frameHeight),
                     Text = "",
                     AutoButtonColor = false,
                     ClipsDescendants = true,
@@ -940,7 +1292,7 @@ function Library:CreateWindow(options)
                         Image = GetIcon(locked and "Lock" or icon),
                         ImageColor3 = locked and Config.LockedTextColor or Config.TextColor,
                         Size = UDim2.new(0, IsMobile and 22 or 18, 0, IsMobile and 22 or 18),
-                        Position = UDim2.new(0, 12, 0.5, IsMobile and -11 or -9),
+                        Position = UDim2.new(0, 12, 0, hasDesc and 8 or (IsMobile and 11 or 8)),
                         Parent = ButtonFrame
                     })
                     xOffset = IsMobile and 26 or 22
@@ -952,11 +1304,26 @@ function Library:CreateWindow(options)
                     TextColor3 = locked and Config.LockedTextColor or Config.TextColor,
                     Font = Config.Font,
                     TextSize = IsMobile and 15 or 14,
-                    Position = UDim2.new(0, 12 + xOffset, 0, 0),
-                    Size = UDim2.new(1, -24 - xOffset, 1, 0),
+                    Position = UDim2.new(0, 12 + xOffset, 0, hasDesc and 6 or 0),
+                    Size = UDim2.new(1, -24 - xOffset, 0, hasDesc and (IsMobile and 22 or 18) or frameHeight),
                     TextXAlignment = icon and Enum.TextXAlignment.Left or Enum.TextXAlignment.Center,
                     Parent = ButtonFrame
                 })
+                
+                local DescLabel
+                if hasDesc then
+                    DescLabel = Create("TextLabel", {
+                        BackgroundTransparency = 1,
+                        Text = description,
+                        TextColor3 = locked and Config.LockedTextColor or Color3.fromRGB(200, 200, 210),
+                        Font = Config.Font,
+                        TextSize = IsMobile and 11 or 10,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        Position = UDim2.new(0, 12 + xOffset, 0, IsMobile and 28 or 24),
+                        Size = UDim2.new(1, -24 - xOffset, 0, IsMobile and 20 or 18),
+                        Parent = ButtonFrame
+                    })
+                end
                 
                 local LockOverlay = CreateLockOverlay(ButtonFrame)
                 
@@ -971,7 +1338,11 @@ function Library:CreateWindow(options)
                 
                 ButtonFrame.MouseEnter:Connect(function()
                     if not isLocked then
-                        Tween(ButtonFrame, {BackgroundColor3 = Color3.fromRGB(108, 121, 255)})
+                        Tween(ButtonFrame, {BackgroundColor3 = Color3.fromRGB(
+                            math.min(Config.AccentColor.R * 255 + 20, 255),
+                            math.min(Config.AccentColor.G * 255 + 20, 255),
+                            math.min(Config.AccentColor.B * 255 + 20, 255)
+                        )})
                     end
                 end)
                 ButtonFrame.MouseLeave:Connect(function()
@@ -998,6 +1369,9 @@ function Library:CreateWindow(options)
                             IconImg.Image = GetIcon("Lock")
                             IconImg.ImageColor3 = Config.LockedTextColor
                         end
+                        if DescLabel then
+                            DescLabel.TextColor3 = Config.LockedTextColor
+                        end
                         LockOverlay.Visible = true
                     else
                         Tween(ButtonFrame, {BackgroundColor3 = Config.AccentColor})
@@ -1006,6 +1380,9 @@ function Library:CreateWindow(options)
                         if IconImg then
                             IconImg.Image = GetIcon(icon)
                             IconImg.ImageColor3 = Config.TextColor
+                        end
+                        if DescLabel then
+                            DescLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
                         end
                         LockOverlay.Visible = false
                     end
@@ -1016,19 +1393,23 @@ function Library:CreateWindow(options)
                 return ButtonObj
             end
             
-            -- Toggle (with Lock support)
+            -- Toggle (with Lock support and Description)
             function Section:CreateToggle(options)
                 options = options or {}
                 local text = options.Text or "Toggle"
                 local default = options.Default or false
+                local description = options.Description or ""
                 local callback = options.Callback or function() end
                 local icon = options.Icon
                 local locked = options.Locked or false
                 
+                local hasDesc = description ~= ""
+                local frameHeight = hasDesc and (IsMobile and 60 or 52) or (IsMobile and 50 or 40)
+                
                 local ToggleFrame = Create("Frame", {
                     BackgroundColor3 = Config.SecondaryColor,
                     BackgroundTransparency = Config.Transparent and Config.TransparencyValue or 0,
-                    Size = UDim2.new(1, 0, 0, IsMobile and 50 or 40),
+                    Size = UDim2.new(1, 0, 0, frameHeight),
                     Parent = SectionContent
                 })
                 AddCorner(ToggleFrame, 6)
@@ -1040,7 +1421,7 @@ function Library:CreateWindow(options)
                         Image = GetIcon(icon),
                         ImageColor3 = Config.AccentColor,
                         Size = UDim2.new(0, IsMobile and 22 or 18, 0, IsMobile and 22 or 18),
-                        Position = UDim2.new(0, 10, 0.5, IsMobile and -11 or -9),
+                        Position = UDim2.new(0, 10, 0, hasDesc and 10 or (IsMobile and 14 or 11)),
                         Parent = ToggleFrame
                     })
                     xOffset = IsMobile and 28 or 25
@@ -1053,10 +1434,24 @@ function Library:CreateWindow(options)
                     Font = Config.Font,
                     TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
-                    Position = UDim2.new(0, 10 + xOffset, 0, 0),
-                    Size = UDim2.new(1, -80 - xOffset, 1, 0),
+                    Position = UDim2.new(0, 10 + xOffset, 0, hasDesc and 8 or 0),
+                    Size = UDim2.new(1, -80 - xOffset, 0, hasDesc and (IsMobile and 22 or 18) or frameHeight),
                     Parent = ToggleFrame
                 })
+                
+                if hasDesc then
+                    Create("TextLabel", {
+                        BackgroundTransparency = 1,
+                        Text = description,
+                        TextColor3 = Config.SecondaryTextColor,
+                        Font = Config.Font,
+                        TextSize = IsMobile and 11 or 10,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        Position = UDim2.new(0, 10 + xOffset, 0, IsMobile and 30 or 26),
+                        Size = UDim2.new(1, -80 - xOffset, 0, IsMobile and 20 or 18),
+                        Parent = ToggleFrame
+                    })
+                end
                 
                 local ToggleButton = Create("TextButton", {
                     BackgroundColor3 = locked and Config.LockedColor or (default and Config.ToggleOnColor or Config.ToggleOffColor),
@@ -1132,7 +1527,7 @@ function Library:CreateWindow(options)
                 return ToggleObj
             end
             
-            -- Slider (with Lock support)
+            -- Slider (with Lock support and Description)
             function Section:CreateSlider(options)
                 options = options or {}
                 local text = options.Text or "Slider"
@@ -1140,14 +1535,19 @@ function Library:CreateWindow(options)
                 local max = options.Max or 100
                 local default = options.Default or min
                 local increment = options.Increment or 1
+                local description = options.Description or ""
                 local callback = options.Callback or function() end
                 local icon = options.Icon
                 local locked = options.Locked or false
+                local suffix = options.Suffix or ""
+                
+                local hasDesc = description ~= ""
+                local frameHeight = hasDesc and (IsMobile and 78 or 68) or (IsMobile and 65 or 55)
                 
                 local SliderFrame = Create("Frame", {
                     BackgroundColor3 = Config.SecondaryColor,
                     BackgroundTransparency = Config.Transparent and Config.TransparencyValue or 0,
-                    Size = UDim2.new(1, 0, 0, IsMobile and 65 or 55),
+                    Size = UDim2.new(1, 0, 0, frameHeight),
                     Parent = SectionContent
                 })
                 AddCorner(SliderFrame, 6)
@@ -1173,26 +1573,42 @@ function Library:CreateWindow(options)
                     TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Position = UDim2.new(0, 10 + xOffset, 0, 5),
-                    Size = UDim2.new(1, -70 - xOffset, 0, 20),
+                    Size = UDim2.new(1, -80 - xOffset, 0, 20),
                     Parent = SliderFrame
                 })
                 
                 local ValueLabel = Create("TextLabel", {
                     BackgroundTransparency = 1,
-                    Text = tostring(default),
+                    Text = tostring(default) .. suffix,
                     TextColor3 = locked and Config.LockedTextColor or Config.AccentColor,
                     Font = Enum.Font.GothamBold,
                     TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Right,
-                    Position = UDim2.new(1, -50, 0, 5),
-                    Size = UDim2.new(0, 40, 0, 20),
+                    Position = UDim2.new(1, -60, 0, 5),
+                    Size = UDim2.new(0, 50, 0, 20),
                     Parent = SliderFrame
                 })
+                
+                local descOffset = 0
+                if hasDesc then
+                    Create("TextLabel", {
+                        BackgroundTransparency = 1,
+                        Text = description,
+                        TextColor3 = Config.SecondaryTextColor,
+                        Font = Config.Font,
+                        TextSize = IsMobile and 11 or 10,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        Position = UDim2.new(0, 10 + xOffset, 0, 23),
+                        Size = UDim2.new(1, -20 - xOffset, 0, IsMobile and 16 or 14),
+                        Parent = SliderFrame
+                    })
+                    descOffset = IsMobile and 12 or 10
+                end
                 
                 local SliderBG = Create("Frame", {
                     BackgroundColor3 = locked and Config.LockedColor or Config.BorderColor,
                     Size = UDim2.new(1, -20, 0, IsMobile and 12 or 8),
-                    Position = UDim2.new(0, 10, 0, IsMobile and 40 or 35),
+                    Position = UDim2.new(0, 10, 0, (IsMobile and 40 or 35) + descOffset),
                     Parent = SliderFrame
                 })
                 AddCorner(SliderBG, IsMobile and 6 or 4)
@@ -1218,8 +1634,7 @@ function Library:CreateWindow(options)
                 local currentValue = default
                 local dragging = false
                 local isLocked = locked
-                
-                local function UpdateSlider(input)
+                             local function UpdateSlider(input)
                     if isLocked then return end
                     
                     local pos = math.clamp((input.Position.X - SliderBG.AbsolutePosition.X) / SliderBG.AbsoluteSize.X, 0, 1)
@@ -1232,7 +1647,7 @@ function Library:CreateWindow(options)
                     
                     Tween(SliderFill, {Size = UDim2.new(percent, 0, 1, 0)}, 0.05)
                     Tween(SliderKnob, {Position = UDim2.new(percent, IsMobile and -10 or -8, 0.5, IsMobile and -10 or -8)}, 0.05)
-                    ValueLabel.Text = tostring(value)
+                    ValueLabel.Text = tostring(value) .. suffix
                     callback(value)
                 end
                 
@@ -1262,7 +1677,7 @@ function Library:CreateWindow(options)
                         local percent = (currentValue - min) / (max - min)
                         Tween(SliderFill, {Size = UDim2.new(percent, 0, 1, 0)})
                         Tween(SliderKnob, {Position = UDim2.new(percent, IsMobile and -10 or -8, 0.5, IsMobile and -10 or -8)})
-                        ValueLabel.Text = tostring(currentValue)
+                        ValueLabel.Text = tostring(currentValue) .. suffix
                         callback(currentValue)
                     end
                 end
@@ -1293,20 +1708,25 @@ function Library:CreateWindow(options)
                 return SliderObj
             end
             
-            -- Input (with Lock support)
+            -- Input (with Lock support and Description)
             function Section:CreateInput(options)
                 options = options or {}
                 local text = options.Text or "Input"
                 local placeholder = options.Placeholder or "Enter text..."
                 local default = options.Default or ""
+                local description = options.Description or ""
                 local callback = options.Callback or function() end
                 local icon = options.Icon
                 local locked = options.Locked or false
+                local numeric = options.Numeric or false
+                
+                local hasDesc = description ~= ""
+                local frameHeight = hasDesc and (IsMobile and 88 or 78) or (IsMobile and 75 or 65)
                 
                 local InputFrame = Create("Frame", {
                     BackgroundColor3 = Config.SecondaryColor,
                     BackgroundTransparency = Config.Transparent and Config.TransparencyValue or 0,
-                    Size = UDim2.new(1, 0, 0, IsMobile and 75 or 65),
+                    Size = UDim2.new(1, 0, 0, frameHeight),
                     Parent = SectionContent
                 })
                 AddCorner(InputFrame, 6)
@@ -1336,10 +1756,26 @@ function Library:CreateWindow(options)
                     Parent = InputFrame
                 })
                 
+                local descOffset = 0
+                if hasDesc then
+                    Create("TextLabel", {
+                        BackgroundTransparency = 1,
+                        Text = description,
+                        TextColor3 = Config.SecondaryTextColor,
+                        Font = Config.Font,
+                        TextSize = IsMobile and 11 or 10,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        Position = UDim2.new(0, 10 + xOffset, 0, 23),
+                        Size = UDim2.new(1, -20 - xOffset, 0, IsMobile and 16 or 14),
+                        Parent = InputFrame
+                    })
+                    descOffset = IsMobile and 14 or 12
+                end
+                
                 local TextBoxFrame = Create("Frame", {
                     BackgroundColor3 = locked and Config.LockedColor or Config.MainColor,
                     Size = UDim2.new(1, -20, 0, IsMobile and 36 or 30),
-                    Position = UDim2.new(0, 10, 0, IsMobile and 32 or 28),
+                    Position = UDim2.new(0, 10, 0, (IsMobile and 32 or 28) + descOffset),
                     Parent = InputFrame
                 })
                 AddCorner(TextBoxFrame, 6)
@@ -1368,7 +1804,12 @@ function Library:CreateWindow(options)
                 
                 TextBox.FocusLost:Connect(function(enterPressed)
                     if not isLocked then
-                        callback(TextBox.Text, enterPressed)
+                        local text = TextBox.Text
+                        if numeric then
+                            text = tonumber(text) or 0
+                            TextBox.Text = tostring(text)
+                        end
+                        callback(text, enterPressed)
                     end
                 end)
                 
@@ -1387,7 +1828,7 @@ function Library:CreateWindow(options)
                 local InputObj = {}
                 function InputObj:SetText(newText)
                     if not isLocked then
-                        TextBox.Text = newText
+                        TextBox.Text = tostring(newText)
                     end
                 end
                 function InputObj:GetText()
@@ -1414,21 +1855,26 @@ function Library:CreateWindow(options)
                 return InputObj
             end
             
-            -- Dropdown (with Lock support)
+            -- Dropdown (Single & Multi Select with Lock support and Description)
             function Section:CreateDropdown(options)
                 options = options or {}
                 local text = options.Text or "Dropdown"
                 local items = options.Items or {}
                 local default = options.Default
                 local multi = options.Multi or false
+                local description = options.Description or ""
                 local callback = options.Callback or function() end
                 local icon = options.Icon
                 local locked = options.Locked or false
+                local maxVisible = options.MaxVisible or 5
+                
+                local hasDesc = description ~= ""
+                local baseHeight = hasDesc and (IsMobile and 88 or 78) or (IsMobile and 75 or 65)
                 
                 local DropdownFrame = Create("Frame", {
                     BackgroundColor3 = Config.SecondaryColor,
                     BackgroundTransparency = Config.Transparent and Config.TransparencyValue or 0,
-                    Size = UDim2.new(1, 0, 0, IsMobile and 75 or 65),
+                    Size = UDim2.new(1, 0, 0, baseHeight),
                     ClipsDescendants = true,
                     Parent = SectionContent
                 })
@@ -1459,10 +1905,26 @@ function Library:CreateWindow(options)
                     Parent = DropdownFrame
                 })
                 
+                local descOffset = 0
+                if hasDesc then
+                    Create("TextLabel", {
+                        BackgroundTransparency = 1,
+                        Text = description,
+                        TextColor3 = Config.SecondaryTextColor,
+                        Font = Config.Font,
+                        TextSize = IsMobile and 11 or 10,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        Position = UDim2.new(0, 10 + xOffset, 0, 23),
+                        Size = UDim2.new(1, -20 - xOffset, 0, IsMobile and 16 or 14),
+                        Parent = DropdownFrame
+                    })
+                    descOffset = IsMobile and 14 or 12
+                end
+                
                 local DropdownButton = Create("TextButton", {
                     BackgroundColor3 = locked and Config.LockedColor or Config.MainColor,
                     Size = UDim2.new(1, -20, 0, IsMobile and 36 or 30),
-                    Position = UDim2.new(0, 10, 0, IsMobile and 32 or 28),
+                    Position = UDim2.new(0, 10, 0, (IsMobile and 32 or 28) + descOffset),
                     Text = "",
                     AutoButtonColor = false,
                     Parent = DropdownFrame
@@ -1470,13 +1932,26 @@ function Library:CreateWindow(options)
                 AddCorner(DropdownButton, 6)
                 AddStroke(DropdownButton, Config.BorderColor, 1)
                 
+                -- Get display text for selection
+                local function GetDisplayText()
+                    if multi then
+                        if type(default) == "table" and #default > 0 then
+                            return table.concat(default, ", ")
+                        end
+                        return "Select..."
+                    else
+                        return default or "Select..."
+                    end
+                end
+                
                 local SelectedLabel = Create("TextLabel", {
                     BackgroundTransparency = 1,
-                    Text = default or "Select...",
+                    Text = GetDisplayText(),
                     TextColor3 = (default and not locked) and Config.TextColor or Config.SecondaryTextColor,
                     Font = Config.Font,
                     TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, 10, 0, 0),
                     Size = UDim2.new(1, -40, 1, 0),
                     Parent = DropdownButton
@@ -1491,18 +1966,32 @@ function Library:CreateWindow(options)
                     Parent = DropdownButton
                 })
                 
-                local OptionsFrame = Create("Frame", {
+                local optionHeight = IsMobile and 40 or 32
+                local optionsYPos = (IsMobile and 73 or 63) + descOffset
+                
+                local OptionsContainer = Create("Frame", {
                     BackgroundColor3 = Config.MainColor,
                     Size = UDim2.new(1, -20, 0, 0),
-                    Position = UDim2.new(0, 10, 0, IsMobile and 73 or 63),
+                    Position = UDim2.new(0, 10, 0, optionsYPos),
                     ClipsDescendants = true,
                     Parent = DropdownFrame
                 })
-                AddCorner(OptionsFrame, 6)
+                AddCorner(OptionsContainer, 6)
+                AddStroke(OptionsContainer, Config.BorderColor, 1)
+                
+                local OptionsScroll = Create("ScrollingFrame", {
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1, 0, 1, 0),
+                    CanvasSize = UDim2.new(0, 0, 0, 0),
+                    ScrollBarThickness = IsMobile and 4 or 3,
+                    ScrollBarImageColor3 = Config.AccentColor,
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                    Parent = OptionsContainer
+                })
                 
                 local OptionsLayout = Create("UIListLayout", {
                     Padding = UDim.new(0, 2),
-                    Parent = OptionsFrame
+                    Parent = OptionsScroll
                 })
                 
                 Create("UIPadding", {
@@ -1510,43 +1999,83 @@ function Library:CreateWindow(options)
                     PaddingBottom = UDim.new(0, 4),
                     PaddingLeft = UDim.new(0, 4),
                     PaddingRight = UDim.new(0, 4),
-                    Parent = OptionsFrame
+                    Parent = OptionsScroll
                 })
                 
                 local LockOverlay = CreateLockOverlay(DropdownFrame)
                 LockOverlay.Visible = locked
                 
                 local isOpen = false
-                local selected = multi and {} or nil
+                local selected = multi and (type(default) == "table" and default or {}) or default
                 local isLocked = locked
+                local optionButtons = {}
                 
-                if default and not multi then
-                    selected = default
-                    SelectedLabel.Text = default
-                    SelectedLabel.TextColor3 = Config.TextColor
+                local function UpdateSelectedDisplay()
+                    if multi then
+                        if #selected > 0 then
+                            SelectedLabel.Text = table.concat(selected, ", ")
+                            SelectedLabel.TextColor3 = Config.TextColor
+                        else
+                            SelectedLabel.Text = "Select..."
+                            SelectedLabel.TextColor3 = Config.SecondaryTextColor
+                        end
+                    else
+                        if selected then
+                            SelectedLabel.Text = selected
+                            SelectedLabel.TextColor3 = Config.TextColor
+                        else
+                            SelectedLabel.Text = "Select..."
+                            SelectedLabel.TextColor3 = Config.SecondaryTextColor
+                        end
+                    end
                 end
                 
                 local function UpdateDropdownSize()
-                    local contentSize = OptionsLayout.AbsoluteContentSize.Y + 8
+                    local itemCount = #items
+                    local visibleCount = math.min(itemCount, maxVisible)
+                    local contentHeight = (optionHeight * visibleCount) + 8
+                    
                     if isOpen and not isLocked then
-                        Tween(DropdownFrame, {Size = UDim2.new(1, 0, 0, (IsMobile and 78 or 68) + contentSize)})
-                        Tween(OptionsFrame, {Size = UDim2.new(1, -20, 0, contentSize)})
+                        local newHeight = baseHeight + contentHeight + 5
+                        Tween(DropdownFrame, {Size = UDim2.new(1, 0, 0, newHeight)})
+                        Tween(OptionsContainer, {Size = UDim2.new(1, -20, 0, contentHeight)})
                         Tween(ArrowIcon, {Rotation = 180})
                     else
-                        Tween(DropdownFrame, {Size = UDim2.new(1, 0, 0, IsMobile and 75 or 65)})
-                        Tween(OptionsFrame, {Size = UDim2.new(1, -20, 0, 0)})
+                        Tween(DropdownFrame, {Size = UDim2.new(1, 0, 0, baseHeight)})
+                        Tween(OptionsContainer, {Size = UDim2.new(1, -20, 0, 0)})
                         Tween(ArrowIcon, {Rotation = 0})
+                    end
+                end
+                
+                local function IsSelected(item)
+                    if multi then
+                        return table.find(selected, item) ~= nil
+                    else
+                        return selected == item
+                    end
+                end
+                
+                local function UpdateOptionVisual(button, isItemSelected)
+                    local checkmark = button:FindFirstChild("Checkmark")
+                    if checkmark then
+                        checkmark.Visible = isItemSelected
+                    end
+                    if isItemSelected then
+                        Tween(button, {BackgroundColor3 = Config.AccentColor, BackgroundTransparency = 0.7})
+                    else
+                        Tween(button, {BackgroundColor3 = Config.SecondaryColor, BackgroundTransparency = 1})
                     end
                 end
                 
                 local function CreateOption(item)
                     local OptionButton = Create("TextButton", {
+                        Name = item,
                         BackgroundColor3 = Config.SecondaryColor,
                         BackgroundTransparency = 1,
-                        Size = UDim2.new(1, 0, 0, IsMobile and 36 or 28),
+                        Size = UDim2.new(1, -8, 0, optionHeight - 4),
                         Text = "",
                         AutoButtonColor = false,
-                        Parent = OptionsFrame
+                        Parent = OptionsScroll
                     })
                     AddCorner(OptionButton, 4)
                     
@@ -1557,43 +2086,71 @@ function Library:CreateWindow(options)
                         Font = Config.Font,
                         TextSize = IsMobile and 13 or 12,
                         TextXAlignment = Enum.TextXAlignment.Left,
-                        Position = UDim2.new(0, 8, 0, 0),
-                        Size = UDim2.new(1, -16, 1, 0),
+                        Position = UDim2.new(0, 10, 0, 0),
+                        Size = UDim2.new(1, multi and -40 or -20, 1, 0),
                         Parent = OptionButton
                     })
                     
+                    if multi then
+                        local Checkmark = Create("ImageLabel", {
+                            Name = "Checkmark",
+                            BackgroundTransparency = 1,
+                            Image = GetIcon("Check"),
+                            ImageColor3 = Config.AccentColor,
+                            Size = UDim2.new(0, IsMobile and 18 or 14, 0, IsMobile and 18 or 14),
+                            Position = UDim2.new(1, IsMobile and -28 or -24, 0.5, IsMobile and -9 or -7),
+                            Visible = IsSelected(item),
+                            Parent = OptionButton
+                        })
+                    end
+                    
+                    UpdateOptionVisual(OptionButton, IsSelected(item))
+                    
                     OptionButton.MouseEnter:Connect(function()
-                        Tween(OptionButton, {BackgroundTransparency = 0})
+                        if not IsSelected(item) then
+                            Tween(OptionButton, {BackgroundTransparency = 0.5})
+                        end
                     end)
+                    
                     OptionButton.MouseLeave:Connect(function()
-                        Tween(OptionButton, {BackgroundTransparency = 1})
+                        if not IsSelected(item) then
+                            Tween(OptionButton, {BackgroundTransparency = 1})
+                        end
                     end)
                     
                     OptionButton.MouseButton1Click:Connect(function()
                         if isLocked then return end
                         
                         if multi then
-                            if table.find(selected, item) then
-                                table.remove(selected, table.find(selected, item))
+                            local index = table.find(selected, item)
+                            if index then
+                                table.remove(selected, index)
                             else
                                 table.insert(selected, item)
                             end
-                            SelectedLabel.Text = #selected > 0 and table.concat(selected, ", ") or "Select..."
-                            SelectedLabel.TextColor3 = #selected > 0 and Config.TextColor or Config.SecondaryTextColor
+                            UpdateOptionVisual(OptionButton, IsSelected(item))
+                            UpdateSelectedDisplay()
                             callback(selected)
                         else
+                            -- Deselect previous
+                            for _, btn in pairs(optionButtons) do
+                                UpdateOptionVisual(btn, false)
+                            end
+                            
                             selected = item
-                            SelectedLabel.Text = item
-                            SelectedLabel.TextColor3 = Config.TextColor
+                            UpdateOptionVisual(OptionButton, true)
+                            UpdateSelectedDisplay()
                             isOpen = false
                             UpdateDropdownSize()
                             callback(item)
                         end
                     end)
                     
+                    optionButtons[item] = OptionButton
                     return OptionButton
                 end
                 
+                -- Create initial options
                 for _, item in ipairs(items) do
                     CreateOption(item)
                 end
@@ -1606,34 +2163,114 @@ function Library:CreateWindow(options)
                 end)
                 
                 local DropdownObj = {}
+                
                 function DropdownObj:SetItems(newItems)
-                    for _, child in ipairs(OptionsFrame:GetChildren()) do
-                        if child:IsA("TextButton") then
-                            child:Destroy()
-                        end
+                    -- Clear existing
+                    for _, btn in pairs(optionButtons) do
+                        btn:Destroy()
                     end
+                    optionButtons = {}
                     items = newItems
+                    
+                    -- Reset selection
+                    if multi then
+                        selected = {}
+                    else
+                        selected = nil
+                    end
+                    UpdateSelectedDisplay()
+                    
+                    -- Create new options
                     for _, item in ipairs(items) do
                         CreateOption(item)
                     end
-                    UpdateDropdownSize()
+                    
+                    if isOpen then
+                        UpdateDropdownSize()
+                    end
                 end
+                
+                function DropdownObj:AddItem(item)
+                    if not table.find(items, item) then
+                        table.insert(items, item)
+                        CreateOption(item)
+                        if isOpen then
+                            UpdateDropdownSize()
+                        end
+                    end
+                end
+                
+                function DropdownObj:RemoveItem(item)
+                    local index = table.find(items, item)
+                    if index then
+                        table.remove(items, index)
+                        if optionButtons[item] then
+                            optionButtons[item]:Destroy()
+                            optionButtons[item] = nil
+                        end
+                        
+                        -- Remove from selection
+                        if multi then
+                            local selIndex = table.find(selected, item)
+                            if selIndex then
+                                table.remove(selected, selIndex)
+                                UpdateSelectedDisplay()
+                                callback(selected)
+                            end
+                        elseif selected == item then
+                            selected = nil
+                            UpdateSelectedDisplay()
+                        end
+                        
+                        if isOpen then
+                            UpdateDropdownSize()
+                        end
+                    end
+                end
+                
                 function DropdownObj:SetValue(value)
                     if isLocked then return end
                     
                     if multi then
                         selected = type(value) == "table" and value or {value}
-                        SelectedLabel.Text = #selected > 0 and table.concat(selected, ", ") or "Select..."
+                        -- Update visuals
+                        for item, btn in pairs(optionButtons) do
+                            UpdateOptionVisual(btn, IsSelected(item))
+                        end
                     else
+                        -- Deselect previous
+                        for _, btn in pairs(optionButtons) do
+                            UpdateOptionVisual(btn, false)
+                        end
                         selected = value
-                        SelectedLabel.Text = value
+                        if optionButtons[value] then
+                            UpdateOptionVisual(optionButtons[value], true)
+                        end
                     end
-                    SelectedLabel.TextColor3 = Config.TextColor
+                    UpdateSelectedDisplay()
                     callback(selected)
                 end
+                
                 function DropdownObj:GetValue()
                     return selected
                 end
+                
+                function DropdownObj:ClearSelection()
+                    if isLocked then return end
+                    
+                    if multi then
+                        selected = {}
+                    else
+                        selected = nil
+                    end
+                    
+                    for _, btn in pairs(optionButtons) do
+                        UpdateOptionVisual(btn, false)
+                    end
+                    UpdateSelectedDisplay()
+                    callback(selected)
+                end
+                
                 function DropdownObj:SetLocked(state)
                     isLocked = state
                     LockOverlay.Visible = state
@@ -1649,30 +2286,36 @@ function Library:CreateWindow(options)
                     else
                         DropdownLabel.TextColor3 = Config.TextColor
                         DropdownButton.BackgroundColor3 = Config.MainColor
-                        SelectedLabel.TextColor3 = selected and Config.TextColor or Config.SecondaryTextColor
+                        UpdateSelectedDisplay()
                         ArrowIcon.Image = GetIcon("ChevronDown")
                         ArrowIcon.ImageColor3 = Config.SecondaryTextColor
                     end
                 end
+                
                 function DropdownObj:IsLocked()
                     return isLocked
                 end
+                
                 return DropdownObj
             end
             
-            -- ColorPicker (with Lock support)
+            -- ColorPicker (with Lock support and Description)
             function Section:CreateColorPicker(options)
                 options = options or {}
                 local text = options.Text or "Color Picker"
                 local default = options.Default or Color3.fromRGB(255, 255, 255)
+                local description = options.Description or ""
                 local callback = options.Callback or function() end
                 local icon = options.Icon
                 local locked = options.Locked or false
                 
+                local hasDesc = description ~= ""
+                local baseHeight = hasDesc and (IsMobile and 60 or 52) or (IsMobile and 50 or 40)
+                
                 local ColorPickerFrame = Create("Frame", {
                     BackgroundColor3 = Config.SecondaryColor,
                     BackgroundTransparency = Config.Transparent and Config.TransparencyValue or 0,
-                    Size = UDim2.new(1, 0, 0, IsMobile and 50 or 40),
+                    Size = UDim2.new(1, 0, 0, baseHeight),
                     ClipsDescendants = true,
                     Parent = SectionContent
                 })
@@ -1685,7 +2328,7 @@ function Library:CreateWindow(options)
                         Image = GetIcon(icon),
                         ImageColor3 = Config.AccentColor,
                         Size = UDim2.new(0, IsMobile and 22 or 18, 0, IsMobile and 22 or 18),
-                        Position = UDim2.new(0, 10, 0, IsMobile and 14 or 11),
+                        Position = UDim2.new(0, 10, 0, hasDesc and 10 or (IsMobile and 14 or 11)),
                         Parent = ColorPickerFrame
                     })
                     xOffset = IsMobile and 28 or 25
@@ -1698,10 +2341,24 @@ function Library:CreateWindow(options)
                     Font = Config.Font,
                     TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
-                    Position = UDim2.new(0, 10 + xOffset, 0, 0),
-                    Size = UDim2.new(1, -80 - xOffset, 1, 0),
+                    Position = UDim2.new(0, 10 + xOffset, 0, hasDesc and 8 or 0),
+                    Size = UDim2.new(1, -80 - xOffset, 0, hasDesc and (IsMobile and 22 or 18) or baseHeight),
                     Parent = ColorPickerFrame
                 })
+                
+                if hasDesc then
+                    Create("TextLabel", {
+                        BackgroundTransparency = 1,
+                        Text = description,
+                        TextColor3 = Config.SecondaryTextColor,
+                        Font = Config.Font,
+                        TextSize = IsMobile and 11 or 10,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        Position = UDim2.new(0, 10 + xOffset, 0, IsMobile and 30 or 26),
+                        Size = UDim2.new(1, -80 - xOffset, 0, IsMobile and 20 or 18),
+                        Parent = ColorPickerFrame
+                    })
+                end
                 
                 local ColorPreview = Create("TextButton", {
                     BackgroundColor3 = locked and Config.LockedColor or default,
@@ -1714,7 +2371,7 @@ function Library:CreateWindow(options)
                 AddCorner(ColorPreview, 6)
                 AddStroke(ColorPreview, Config.BorderColor, 1)
                 
-                -- Lock icon on preview if locked
+                -- Lock icon on preview
                 local PreviewLockIcon = Create("ImageLabel", {
                     BackgroundTransparency = 1,
                     Image = GetIcon("Lock"),
@@ -1726,14 +2383,16 @@ function Library:CreateWindow(options)
                 })
                 
                 -- Color Picker Panel
+                local pickerHeight = IsMobile and 180 or 150
                 local PickerPanel = Create("Frame", {
                     BackgroundColor3 = Config.MainColor,
-                    Size = UDim2.new(1, -20, 0, IsMobile and 180 or 150),
-                    Position = UDim2.new(0, 10, 0, IsMobile and 55 or 45),
+                    Size = UDim2.new(1, -20, 0, pickerHeight),
+                    Position = UDim2.new(0, 10, 0, baseHeight + 5),
                     Visible = false,
                     Parent = ColorPickerFrame
                 })
                 AddCorner(PickerPanel, 6)
+                AddStroke(PickerPanel, Config.BorderColor, 1)
                 
                 -- Saturation/Value picker
                 local SVPicker = Create("ImageLabel", {
@@ -1764,7 +2423,6 @@ function Library:CreateWindow(options)
                 })
                 AddCorner(HueSlider, 4)
                 
-                -- Create hue gradient
                 Create("UIGradient", {
                     Rotation = 90,
                     Color = ColorSequence.new({
@@ -1788,101 +2446,101 @@ function Library:CreateWindow(options)
                 AddCorner(HueCursor, 3)
                 AddStroke(HueCursor, Color3.fromRGB(0, 0, 0), 1)
                 
-                -- Alpha/Transparency slider
-                local AlphaSlider = Create("Frame", {
+                -- Brightness slider
+                local BrightnessSlider = Create("Frame", {
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     Size = UDim2.new(0, IsMobile and 25 or 20, 1, IsMobile and -50 or -40),
                     Position = UDim2.new(1, IsMobile and -30 or -25, 0, 5),
                     Parent = PickerPanel
                 })
-                AddCorner(AlphaSlider, 4)
+                AddCorner(BrightnessSlider, 4)
                 
-                local AlphaGradient = Create("UIGradient", {
+                local BrightnessGradient = Create("UIGradient", {
                     Rotation = 90,
                     Color = ColorSequence.new({
                         ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
                         ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
                     }),
-                    Parent = AlphaSlider
+                    Parent = BrightnessSlider
                 })
                 
-                local AlphaCursor = Create("Frame", {
+                local BrightnessCursor = Create("Frame", {
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     Size = UDim2.new(1, 4, 0, IsMobile and 8 or 6),
                     Position = UDim2.new(0, -2, 0, -3),
-                    Parent = AlphaSlider
+                    Parent = BrightnessSlider
                 })
-                AddCorner(AlphaCursor, 3)
-                AddStroke(AlphaCursor, Color3.fromRGB(0, 0, 0), 1)
+                AddCorner(BrightnessCursor, 3)
+                AddStroke(BrightnessCursor, Color3.fromRGB(0, 0, 0), 1)
                 
-                -- RGB Input Frame
-                local RGBFrame = Create("Frame", {
+                -- RGB/Hex inputs
+                local InputFrame = Create("Frame", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, -10, 0, IsMobile and 35 or 30),
                     Position = UDim2.new(0, 5, 1, IsMobile and -40 or -35),
                     Parent = PickerPanel
                 })
                 
-                local RGBLayout = Create("UIListLayout", {
+                local InputLayout = Create("UIListLayout", {
                     FillDirection = Enum.FillDirection.Horizontal,
                     Padding = UDim.new(0, 5),
-                    Parent = RGBFrame
+                    Parent = InputFrame
                 })
                 
-                local function CreateRGBInput(name, defaultVal)
-                    local InputContainer = Create("Frame", {
+                local function CreateColorInput(name, defaultVal)
+                    local Container = Create("Frame", {
                         BackgroundColor3 = Config.SecondaryColor,
-                        Size = UDim2.new(0, IsMobile and 55 or 45, 1, 0),
-                        Parent = RGBFrame
+                        Size = UDim2.new(0, IsMobile and 50 or 42, 1, 0),
+                        Parent = InputFrame
                     })
-                    AddCorner(InputContainer, 4)
+                    AddCorner(Container, 4)
                     
-                    local InputLabel = Create("TextLabel", {
+                    Create("TextLabel", {
                         BackgroundTransparency = 1,
                         Text = name,
                         TextColor3 = Config.SecondaryTextColor,
                         Font = Config.Font,
-                        TextSize = IsMobile and 11 or 10,
-                        Position = UDim2.new(0, 4, 0, 2),
-                        Size = UDim2.new(0, 12, 0, 12),
-                        Parent = InputContainer
+                        TextSize = IsMobile and 10 or 9,
+                        Position = UDim2.new(0, 4, 0, 1),
+                        Size = UDim2.new(0, 12, 0, 10),
+                        Parent = Container
                     })
                     
-                    local InputBox = Create("TextBox", {
+                    local Input = Create("TextBox", {
                         BackgroundTransparency = 1,
                         Text = tostring(defaultVal),
                         TextColor3 = Config.TextColor,
                         Font = Config.Font,
-                        TextSize = IsMobile and 12 or 11,
-                        Position = UDim2.new(0, 4, 0, IsMobile and 14 or 12),
+                        TextSize = IsMobile and 11 or 10,
+                        Position = UDim2.new(0, 4, 0, IsMobile and 12 or 10),
                         Size = UDim2.new(1, -8, 0, IsMobile and 18 or 16),
                         ClearTextOnFocus = true,
-                        Parent = InputContainer
+                        Parent = Container
                     })
                     
-                    return InputBox
+                    return Input
                 end
                 
-                local RInput = CreateRGBInput("R", math.floor(default.R * 255))
-                local GInput = CreateRGBInput("G", math.floor(default.G * 255))
-                local BInput = CreateRGBInput("B", math.floor(default.B * 255))
+                local RInput = CreateColorInput("R", math.floor(default.R * 255))
+                local GInput = CreateColorInput("G", math.floor(default.G * 255))
+                local BInput = CreateColorInput("B", math.floor(default.B * 255))
                 
-                -- Hex Input
+                -- Hex input
                 local HexContainer = Create("Frame", {
                     BackgroundColor3 = Config.SecondaryColor,
-                    Size = UDim2.new(1, -(IsMobile and 180 or 150), 1, 0),
-                    Parent = RGBFrame
+                    Size = UDim2.new(1, -(IsMobile and 170 or 145), 1, 0),
+                    Parent = InputFrame
                 })
                 AddCorner(HexContainer, 4)
                 
-                local HexLabel = Create("TextLabel", {
+                Create("TextLabel", {
                     BackgroundTransparency = 1,
                     Text = "#",
                     TextColor3 = Config.SecondaryTextColor,
                     Font = Config.Font,
-                    TextSize = IsMobile and 12 or 11,
+                    TextSize = IsMobile and 11 or 10,
                     Position = UDim2.new(0, 4, 0.5, 0),
-                    Size = UDim2.new(0, 12, 0, 16),
+                    Size = UDim2.new(0, 10, 0, 14),
                     AnchorPoint = Vector2.new(0, 0.5),
                     Parent = HexContainer
                 })
@@ -1892,9 +2550,9 @@ function Library:CreateWindow(options)
                     Text = string.format("%02X%02X%02X", math.floor(default.R * 255), math.floor(default.G * 255), math.floor(default.B * 255)),
                     TextColor3 = Config.TextColor,
                     Font = Config.Font,
-                    TextSize = IsMobile and 12 or 11,
-                    Position = UDim2.new(0, 16, 0, 0),
-                    Size = UDim2.new(1, -20, 1, 0),
+                    TextSize = IsMobile and 11 or 10,
+                    Position = UDim2.new(0, 14, 0, 0),
+                    Size = UDim2.new(1, -18, 1, 0),
                     ClearTextOnFocus = true,
                     Parent = HexContainer
                 })
@@ -1914,12 +2572,9 @@ function Library:CreateWindow(options)
                     SVCursor.Position = UDim2.new(s, 0, 1 - v, 0)
                     HueCursor.Position = UDim2.new(0, -2, h, -3)
                     
-                    -- Update RGB inputs
                     RInput.Text = tostring(math.floor(currentColor.R * 255))
                     GInput.Text = tostring(math.floor(currentColor.G * 255))
                     BInput.Text = tostring(math.floor(currentColor.B * 255))
-                    
-                    -- Update Hex input
                     HexInput.Text = string.format("%02X%02X%02X", math.floor(currentColor.R * 255), math.floor(currentColor.G * 255), math.floor(currentColor.B * 255))
                     
                     if not skipCallback then
@@ -1939,6 +2594,7 @@ function Library:CreateWindow(options)
                         UpdateColor()
                     end
                 end)
+                
                 SVPicker.InputEnded:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         svDragging = false
@@ -1956,6 +2612,7 @@ function Library:CreateWindow(options)
                         UpdateColor()
                     end
                 end)
+                
                 HueSlider.InputEnded:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         hueDragging = false
@@ -1985,13 +2642,9 @@ function Library:CreateWindow(options)
                 local function HandleRGBInput()
                     if isLocked then return end
                     
-                    local r = tonumber(RInput.Text) or 0
-                    local g = tonumber(GInput.Text) or 0
-                    local b = tonumber(BInput.Text) or 0
-                    
-                    r = math.clamp(r, 0, 255)
-                    g = math.clamp(g, 0, 255)
-                    b = math.clamp(b, 0, 255)
+                    local r = math.clamp(tonumber(RInput.Text) or 0, 0, 255)
+                    local g = math.clamp(tonumber(GInput.Text) or 0, 0, 255)
+                    local b = math.clamp(tonumber(BInput.Text) or 0, 0, 255)
                     
                     currentColor = Color3.fromRGB(r, g, b)
                     h, s, v = Color3.toHSV(currentColor)
@@ -2016,7 +2669,6 @@ function Library:CreateWindow(options)
                         h, s, v = Color3.toHSV(currentColor)
                         UpdateColor()
                     else
-                        -- Reset to current color if invalid
                         HexInput.Text = string.format("%02X%02X%02X", math.floor(currentColor.R * 255), math.floor(currentColor.G * 255), math.floor(currentColor.B * 255))
                     end
                 end)
@@ -2026,7 +2678,8 @@ function Library:CreateWindow(options)
                     
                     isOpen = not isOpen
                     PickerPanel.Visible = isOpen
-                    Tween(ColorPickerFrame, {Size = UDim2.new(1, 0, 0, isOpen and (IsMobile and 240 or 200) or (IsMobile and 50 or 40))})
+                    local newHeight = isOpen and (baseHeight + pickerHeight + 10) or baseHeight
+                    Tween(ColorPickerFrame, {Size = UDim2.new(1, 0, 0, newHeight)})
                 end)
                 
                 UpdateColor(true)
@@ -2049,7 +2702,7 @@ function Library:CreateWindow(options)
                     if state then
                         isOpen = false
                         PickerPanel.Visible = false
-                        Tween(ColorPickerFrame, {Size = UDim2.new(1, 0, 0, IsMobile and 50 or 40)})
+                        Tween(ColorPickerFrame, {Size = UDim2.new(1, 0, 0, baseHeight)})
                         ColorLabel.TextColor3 = Config.LockedTextColor
                         ColorPreview.BackgroundColor3 = Config.LockedColor
                     else
@@ -2063,20 +2716,24 @@ function Library:CreateWindow(options)
                 return ColorPickerObj
             end
             
-            -- Keybind (with Lock support)
+            -- Keybind (with Lock support and Description)
             function Section:CreateKeybind(options)
                 options = options or {}
                 local text = options.Text or "Keybind"
                 local default = options.Default or Enum.KeyCode.Unknown
+                local description = options.Description or ""
                 local callback = options.Callback or function() end
                 local changedCallback = options.ChangedCallback or function() end
                 local icon = options.Icon
                 local locked = options.Locked or false
                 
+                local hasDesc = description ~= ""
+                local frameHeight = hasDesc and (IsMobile and 60 or 52) or (IsMobile and 50 or 40)
+                
                 local KeybindFrame = Create("Frame", {
                     BackgroundColor3 = Config.SecondaryColor,
                     BackgroundTransparency = Config.Transparent and Config.TransparencyValue or 0,
-                    Size = UDim2.new(1, 0, 0, IsMobile and 50 or 40),
+                    Size = UDim2.new(1, 0, 0, frameHeight),
                     Parent = SectionContent
                 })
                 AddCorner(KeybindFrame, 6)
@@ -2088,7 +2745,7 @@ function Library:CreateWindow(options)
                         Image = GetIcon(icon),
                         ImageColor3 = Config.AccentColor,
                         Size = UDim2.new(0, IsMobile and 22 or 18, 0, IsMobile and 22 or 18),
-                        Position = UDim2.new(0, 10, 0.5, IsMobile and -11 or -9),
+                        Position = UDim2.new(0, 10, 0, hasDesc and 10 or (IsMobile and 14 or 11)),
                         Parent = KeybindFrame
                     })
                     xOffset = IsMobile and 28 or 25
@@ -2101,10 +2758,24 @@ function Library:CreateWindow(options)
                     Font = Config.Font,
                     TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
-                    Position = UDim2.new(0, 10 + xOffset, 0, 0),
-                    Size = UDim2.new(1, -100 - xOffset, 1, 0),
+                    Position = UDim2.new(0, 10 + xOffset, 0, hasDesc and 8 or 0),
+                    Size = UDim2.new(1, -110 - xOffset, 0, hasDesc and (IsMobile and 22 or 18) or frameHeight),
                     Parent = KeybindFrame
                 })
+                
+                if hasDesc then
+                    Create("TextLabel", {
+                        BackgroundTransparency = 1,
+                        Text = description,
+                        TextColor3 = Config.SecondaryTextColor,
+                        Font = Config.Font,
+                        TextSize = IsMobile and 11 or 10,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        Position = UDim2.new(0, 10 + xOffset, 0, IsMobile and 30 or 26),
+                        Size = UDim2.new(1, -110 - xOffset, 0, IsMobile and 20 or 18),
+                        Parent = KeybindFrame
+                    })
+                end
                 
                 local KeybindButton = Create("TextButton", {
                     BackgroundColor3 = locked and Config.LockedColor or Config.MainColor,
@@ -2146,7 +2817,6 @@ function Library:CreateWindow(options)
                             Tween(KeybindButton, {BackgroundColor3 = Config.MainColor})
                             changedCallback(currentKey)
                         elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 then
-                            -- Cancel listening on mouse click
                             KeybindButton.Text = currentKey.Name or "None"
                             isListening = false
                             Tween(KeybindButton, {BackgroundColor3 = Config.MainColor})
@@ -2201,7 +2871,7 @@ function Library:CreateWindow(options)
         local content = options.Content or ""
         local duration = options.Duration or 3
         local icon = options.Icon or "Bell"
-        local notifType = options.Type or "Info" -- Info, Success, Warning, Error
+        local notifType = options.Type or "Info"
         
         local typeColors = {
             Info = Config.AccentColor,
@@ -2237,7 +2907,6 @@ function Library:CreateWindow(options)
         AddCorner(NotifFrame, 8)
         AddShadow(NotifFrame)
         
-        -- Color indicator bar
         local ColorBar = Create("Frame", {
             BackgroundColor3 = typeColors[notifType] or typeColors.Info,
             Size = UDim2.new(0, 4, 1, -10),
@@ -2263,7 +2932,7 @@ function Library:CreateWindow(options)
             TextSize = IsMobile and 15 or 14,
             TextXAlignment = Enum.TextXAlignment.Left,
             Position = UDim2.new(0, IsMobile and 55 or 50, 0, IsMobile and 14 or 12),
-            Size = UDim2.new(1, IsMobile and -65 or -60, 0, 20),
+            Size = UDim2.new(1, IsMobile and -95 or -60, 0, 20),
             Parent = NotifFrame
         })
         
@@ -2276,7 +2945,7 @@ function Library:CreateWindow(options)
             TextXAlignment = Enum.TextXAlignment.Left,
             TextWrapped = true,
             Position = UDim2.new(0, IsMobile and 55 or 50, 0, IsMobile and 36 or 32),
-            Size = UDim2.new(1, IsMobile and -65 or -60, 0, 30),
+            Size = UDim2.new(1, IsMobile and -95 or -60, 0, 30),
             Parent = NotifFrame
         })
         
@@ -2288,79 +2957,87 @@ function Library:CreateWindow(options)
         })
         AddCorner(ProgressBar, 2)
         
+        -- Close button
+        local CloseNotifBtn = Create("TextButton", {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(0, 30, 0, 30),
+            Position = UDim2.new(1, -35, 0, 5),
+            Text = "",
+            Parent = NotifFrame
+        })
+        
+        local CloseNotifIcon = Create("ImageLabel", {
+            BackgroundTransparency = 1,
+            Image = GetIcon("X"),
+            ImageColor3 = Config.SecondaryTextColor,
+            Size = UDim2.new(0, 16, 0, 16),
+            Position = UDim2.new(0.5, -8, 0.5, -8),
+            Parent = CloseNotifBtn
+        })
+        
+        local function CloseNotification()
+            Tween(NotifFrame, {Position = UDim2.new(1, 20, 0, 0)}, 0.3)
+            task.delay(0.3, function()
+                if NotifFrame and NotifFrame.Parent then
+                    NotifFrame:Destroy()
+                end
+            end)
+        end
+        
+        CloseNotifBtn.MouseButton1Click:Connect(CloseNotification)
+        
         -- Animate in
         NotifFrame.Position = UDim2.new(1, 20, 0, 0)
         Tween(NotifFrame, {Position = UDim2.new(0, 0, 0, 0)}, 0.3)
         Tween(ProgressBar, {Size = UDim2.new(0, 0, 0, 3)}, duration)
         
-        -- Close button for mobile
-        if IsMobile then
-            local CloseNotifBtn = Create("TextButton", {
-                BackgroundTransparency = 1,
-                Size = UDim2.new(0, 30, 0, 30),
-                Position = UDim2.new(1, -35, 0, 5),
-                Text = "",
-                Parent = NotifFrame
-            })
-            
-            local CloseNotifIcon = Create("ImageLabel", {
-                BackgroundTransparency = 1,
-                Image = GetIcon("X"),
-                ImageColor3 = Config.SecondaryTextColor,
-                Size = UDim2.new(0, 16, 0, 16),
-                Position = UDim2.new(0.5, -8, 0.5, -8),
-                Parent = CloseNotifBtn
-            })
-            
-            CloseNotifBtn.MouseButton1Click:Connect(function()
-                Tween(NotifFrame, {Position = UDim2.new(1, 20, 0, 0)}, 0.3)
-                task.delay(0.3, function()
-                    NotifFrame:Destroy()
-                end)
-            end)
-        end
-        
         task.delay(duration, function()
             if NotifFrame and NotifFrame.Parent then
-                Tween(NotifFrame, {Position = UDim2.new(1, 20, 0, 0)}, 0.3)
-                task.delay(0.3, function()
-                    if NotifFrame and NotifFrame.Parent then
-                        NotifFrame:Destroy()
-                    end
-                end)
+                CloseNotification()
             end
         end)
     end
     
-    -- Dialog/Prompt System
+    -- Dialog System (Fixed)
     function Window:CreateDialog(options)
         options = options or {}
         local title = options.Title or "Dialog"
         local content = options.Content or "Are you sure?"
-        local buttons = options.Buttons or {{Text = "Confirm", Callback = function() end}, {Text = "Cancel", Callback = function() end}}
+        local buttons = options.Buttons or {
+            {Text = "Confirm", Callback = function() end},
+            {Text = "Cancel", Callback = function() end}
+        }
         
+        -- Create overlay
         local DialogOverlay = Create("Frame", {
             Name = "DialogOverlay",
             BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-            BackgroundTransparency = 0.5,
+            BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 1, 0),
             ZIndex = 200,
             Parent = ScreenGui
         })
         
+        -- Create dialog frame
         local DialogFrame = Create("Frame", {
+            Name = "DialogFrame",
             BackgroundColor3 = Config.MainColor,
-            Size = UDim2.new(0, IsMobile and 300 or 350, 0, 0),
+            Size = UDim2.new(0, 0, 0, 0),
             Position = UDim2.new(0.5, 0, 0.5, 0),
             AnchorPoint = Vector2.new(0.5, 0.5),
-            AutomaticSize = Enum.AutomaticSize.Y,
+            ClipsDescendants = true,
             ZIndex = 201,
             Parent = DialogOverlay
         })
         AddCorner(DialogFrame, 10)
         AddShadow(DialogFrame)
         
+        local targetWidth = IsMobile and 300 or 350
+        local targetHeight = 160
+        
+        -- Dialog content
         local DialogTitle = Create("TextLabel", {
+            Name = "Title",
             BackgroundTransparency = 1,
             Text = title,
             TextColor3 = Config.TextColor,
@@ -2374,24 +3051,26 @@ function Library:CreateWindow(options)
         })
         
         local DialogContent = Create("TextLabel", {
+            Name = "Content",
             BackgroundTransparency = 1,
             Text = content,
             TextColor3 = Config.SecondaryTextColor,
             Font = Config.Font,
             TextSize = IsMobile and 14 or 13,
             TextWrapped = true,
+            TextYAlignment = Enum.TextYAlignment.Top,
             Position = UDim2.new(0, 20, 0, 50),
-            Size = UDim2.new(1, -40, 0, 0),
-            AutomaticSize = Enum.AutomaticSize.Y,
+            Size = UDim2.new(1, -40, 0, 50),
             TextXAlignment = Enum.TextXAlignment.Left,
             ZIndex = 202,
             Parent = DialogFrame
         })
         
         local ButtonsFrame = Create("Frame", {
+            Name = "Buttons",
             BackgroundTransparency = 1,
             Size = UDim2.new(1, -40, 0, IsMobile and 44 or 36),
-            Position = UDim2.new(0, 20, 0, 90),
+            Position = UDim2.new(0, 20, 1, IsMobile and -64 or -56),
             ZIndex = 202,
             Parent = DialogFrame
         })
@@ -2403,25 +3082,33 @@ function Library:CreateWindow(options)
             Parent = ButtonsFrame
         })
         
-        local DialogPadding = Create("UIPadding", {
-            PaddingBottom = UDim.new(0, 20),
-            Parent = DialogFrame
-        })
+        local dialogClosed = false
         
-        local function CloseDialog()
+        local function CloseDialog(callback)
+            if dialogClosed then return end
+            dialogClosed = true
+            
             Tween(DialogOverlay, {BackgroundTransparency = 1}, 0.2)
             Tween(DialogFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
-            task.delay(0.2, function()
-                DialogOverlay:Destroy()
+            
+            task.delay(0.25, function()
+                if DialogOverlay and DialogOverlay.Parent then
+                    DialogOverlay:Destroy()
+                end
+                if callback then
+                    callback()
+                end
             end)
         end
         
+        -- Create buttons in reverse order for proper layout
         for i = #buttons, 1, -1 do
             local btnInfo = buttons[i]
-            local isLast = i == 1
+            local isPrimary = i == 1
             
             local DialogBtn = Create("TextButton", {
-                BackgroundColor3 = isLast and Config.AccentColor or Config.SecondaryColor,
+                Name = "Button" .. i,
+                BackgroundColor3 = isPrimary and Config.AccentColor or Config.SecondaryColor,
                 Size = UDim2.new(0, IsMobile and 90 or 80, 1, 0),
                 Text = btnInfo.Text or "Button",
                 TextColor3 = Config.TextColor,
@@ -2435,25 +3122,42 @@ function Library:CreateWindow(options)
             
             DialogBtn.MouseButton1Click:Connect(function()
                 CreateRipple(DialogBtn)
-                CloseDialog()
-                if btnInfo.Callback then
-                    btnInfo.Callback()
-                end
+                CloseDialog(btnInfo.Callback)
             end)
             
             DialogBtn.MouseEnter:Connect(function()
-                Tween(DialogBtn, {BackgroundColor3 = isLast and Color3.fromRGB(108, 121, 255) or Config.BorderColor})
+                local hoverColor = isPrimary and Color3.fromRGB(
+                    math.min(Config.AccentColor.R * 255 + 20, 255),
+                    math.min(Config.AccentColor.G * 255 + 20, 255),
+                    math.min(Config.AccentColor.B * 255 + 20, 255)
+                ) or Config.BorderColor
+                Tween(DialogBtn, {BackgroundColor3 = hoverColor})
             end)
+            
             DialogBtn.MouseLeave:Connect(function()
-                Tween(DialogBtn, {BackgroundColor3 = isLast and Config.AccentColor or Config.SecondaryColor})
+                Tween(DialogBtn, {BackgroundColor3 = isPrimary and Config.AccentColor or Config.SecondaryColor})
             end)
         end
         
+        -- Close on overlay click
+        DialogOverlay.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                local mousePos = UserInputService:GetMouseLocation()
+                local framePos = DialogFrame.AbsolutePosition
+                local frameSize = DialogFrame.AbsoluteSize
+                
+                if mousePos.X < framePos.X or mousePos.X > framePos.X + frameSize.X or
+                   mousePos.Y < framePos.Y or mousePos.Y > framePos.Y + frameSize.Y then
+                    CloseDialog()
+                end
+            end
+        end)
+        
         -- Animate in
-        DialogFrame.Size = UDim2.new(0, 0, 0, 0)
-        DialogOverlay.BackgroundTransparency = 1
-        Tween(DialogOverlay, {BackgroundTransparency = 0.5}, 0.2)
-        Tween(DialogFrame, {Size = UDim2.new(0, IsMobile and 300 or 350, 0, 0)}, 0.3)
+        task.defer(function()
+            Tween(DialogOverlay, {BackgroundTransparency = 0.5}, 0.2)
+            Tween(DialogFrame, {Size = UDim2.new(0, targetWidth, 0, targetHeight)}, 0.3)
+        end)
     end
     
     -- Toggle UI visibility
@@ -2478,5 +3182,4 @@ function Library:CreateWindow(options)
     return Window
 end
 
--- Return Library
 return Library
