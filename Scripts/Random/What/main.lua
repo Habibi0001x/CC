@@ -1,8 +1,4 @@
-# Advanced Roblox UI Library v4.0
 
-Fixed dialog bug and added all requested features including themes, multi-select dropdowns, element descriptions, and dividers.
-
-```lua
 --[[
     Advanced UI Library v4.0
     
