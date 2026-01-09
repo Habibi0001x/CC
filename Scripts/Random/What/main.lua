@@ -1,38 +1,18 @@
-
---[[
-    Advanced UI Library v4.2 - Simplified
-    
-    Features:
-    - Mobile Detection & Support
-    - All UI Elements with Descriptions
-    - Single & Multi-Select Dropdowns
-    - Lockable Elements
-    - Transparency Settings
-    - Resizable Windows
-    - Fixed Dialogs
-    - CoreGui with cloneref
-]]
-
--- CloneRef implementation
 local cloneref = cloneref or function(instance)
     return instance
 end
 
--- Services
 local Players = cloneref(game:GetService("Players"))
 local CoreGui = cloneref(game:GetService("CoreGui"))
 local TweenService = cloneref(game:GetService("TweenService"))
 local UserInputService = cloneref(game:GetService("UserInputService"))
 local RunService = cloneref(game:GetService("RunService"))
 
--- Library
 local Library = {}
 Library.__index = Library
 
--- Mobile Detection
 local IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled
 
--- Config (Single Dark Theme)
 local Config = {
     MainColor = Color3.fromRGB(25, 25, 35),
     SecondaryColor = Color3.fromRGB(35, 35, 50),
@@ -50,7 +30,6 @@ local Config = {
     TransparencyValue = 0.3
 }
 
--- Icons
 local LucideIcons = {
     Home = "rbxassetid://7733960981",
     Settings = "rbxassetid://7734053495",
@@ -81,7 +60,6 @@ local LucideIcons = {
     Crosshair = "rbxassetid://7733673041"
 }
 
--- Utilities
 local function Create(className, properties)
     local instance = Instance.new(className)
     for prop, value in pairs(properties) do
@@ -137,7 +115,6 @@ local function GetIcon(iconName)
     return LucideIcons[iconName] or LucideIcons.Circle
 end
 
--- Dragging
 local function MakeDraggable(frame, handle)
     handle = handle or frame
     local dragging, dragStart, startPos
@@ -164,7 +141,6 @@ local function MakeDraggable(frame, handle)
     end)
 end
 
--- Resizing
 local function MakeResizable(frame, handle, minSize, maxSize)
     minSize = minSize or Vector2.new(400, 300)
     maxSize = maxSize or Vector2.new(800, 600)
@@ -196,7 +172,6 @@ local function MakeResizable(frame, handle, minSize, maxSize)
     end)
 end
 
--- Ripple
 local function CreateRipple(parent)
     local ripple = Create("Frame", {
         Name = "Ripple",
@@ -217,7 +192,6 @@ local function CreateRipple(parent)
     end)
 end
 
--- Lock Overlay
 local function CreateLockOverlay(parent)
     local overlay = Create("Frame", {
         Name = "LockOverlay",
@@ -244,7 +218,6 @@ local function CreateLockOverlay(parent)
     return overlay
 end
 
--- Main Window
 function Library:CreateWindow(options)
     options = options or {}
     local title = options.Title or "UI Library"
@@ -259,11 +232,9 @@ function Library:CreateWindow(options)
     Config.Transparent = transparent
     Config.TransparencyValue = transparencyValue
     
-    -- Remove existing
     local existing = CoreGui:FindFirstChild("AdvancedUILibrary")
     if existing then existing:Destroy() end
     
-    -- ScreenGui
     local ScreenGui = Create("ScreenGui", {
         Name = "AdvancedUILibrary",
         ResetOnSpawn = false,
@@ -272,7 +243,6 @@ function Library:CreateWindow(options)
         Parent = CoreGui
     })
     
-    -- Main Frame
     local MainFrame = Create("Frame", {
         Name = "MainFrame",
         BackgroundColor3 = Config.MainColor,
@@ -286,7 +256,6 @@ function Library:CreateWindow(options)
     AddCorner(MainFrame, 10)
     AddShadow(MainFrame)
     
-    -- Title Bar
     local TitleBar = Create("Frame", {
         Name = "TitleBar",
         BackgroundColor3 = Config.SecondaryColor,
@@ -342,7 +311,6 @@ function Library:CreateWindow(options)
         Parent = TitleBar
     })
     
-    -- Controls
     local ControlsFrame = Create("Frame", {
         Name = "Controls",
         BackgroundTransparency = 1,
@@ -394,7 +362,6 @@ function Library:CreateWindow(options)
         Parent = CloseBtn
     })
     
-    -- Tab Container
     local tabWidth = IsMobile and 120 or 140
     local TabContainer = Create("Frame", {
         Name = "TabContainer",
@@ -423,7 +390,6 @@ function Library:CreateWindow(options)
         Parent = TabScroll
     })
     
-    -- Content Container
     local ContentContainer = Create("Frame", {
         Name = "ContentContainer",
         BackgroundColor3 = Config.SecondaryColor,
@@ -434,7 +400,6 @@ function Library:CreateWindow(options)
     })
     AddCorner(ContentContainer, 8)
     
-    -- Resize Handle
     local ResizeHandle = Create("TextButton", {
         Name = "ResizeHandle",
         BackgroundColor3 = Config.BorderColor,
@@ -461,7 +426,6 @@ function Library:CreateWindow(options)
     MakeDraggable(MainFrame, TitleBar)
     MakeResizable(MainFrame, ResizeHandle, minSize, maxSize)
     
-    -- Minimize
     local isMinimized = false
     local originalSize = MainFrame.Size
     
@@ -487,7 +451,6 @@ function Library:CreateWindow(options)
         end
     end)
     
-    -- Close
     CloseBtn.MouseButton1Click:Connect(function()
         CreateRipple(CloseBtn)
         Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3)
@@ -496,13 +459,11 @@ function Library:CreateWindow(options)
         end)
     end)
     
-    -- Hover effects
     MinimizeBtn.MouseEnter:Connect(function() Tween(MinimizeBtn, {BackgroundColor3 = Config.AccentColor}) end)
     MinimizeBtn.MouseLeave:Connect(function() Tween(MinimizeBtn, {BackgroundColor3 = Config.BorderColor}) end)
     CloseBtn.MouseEnter:Connect(function() Tween(CloseBtn, {BackgroundColor3 = Color3.fromRGB(255, 80, 80)}) end)
     CloseBtn.MouseLeave:Connect(function() Tween(CloseBtn, {BackgroundColor3 = Color3.fromRGB(220, 60, 60)}) end)
     
-    -- Mobile Toggle
     local MobileToggle
     if IsMobile then
         MobileToggle = Create("TextButton", {
@@ -535,7 +496,6 @@ function Library:CreateWindow(options)
         MakeDraggable(MobileToggle, MobileToggle)
     end
     
-    -- Window Object
     local Window = {
         Tabs = {},
         ActiveTab = nil,
@@ -544,7 +504,6 @@ function Library:CreateWindow(options)
         IsMobile = IsMobile
     }
     
-    -- Set Transparency
     function Window:SetTransparency(enabled, value)
         Config.Transparent = enabled
         Config.TransparencyValue = value or Config.TransparencyValue
@@ -556,7 +515,6 @@ function Library:CreateWindow(options)
         ContentContainer.BackgroundTransparency = trans
     end
     
-    -- Create Tab
     function Window:CreateTab(options)
         options = options or {}
         local tabName = options.Name or "Tab"
@@ -656,7 +614,6 @@ function Library:CreateWindow(options)
             SelectTab()
         end
         
-        -- Section
         function Tab:CreateSection(options)
             options = options or {}
             local sectionName = options.Name or "Section"
@@ -722,7 +679,6 @@ function Library:CreateWindow(options)
             
             local Section = {}
             
-            -- Label
             function Section:CreateLabel(options)
                 options = options or {}
                 local text = options.Text or "Label"
@@ -782,7 +738,6 @@ function Library:CreateWindow(options)
                 }
             end
             
-            -- Paragraph
             function Section:CreateParagraph(options)
                 options = options or {}
                 local title = options.Title or "Paragraph"
@@ -831,7 +786,6 @@ function Library:CreateWindow(options)
                 }
             end
             
-            -- Button
             function Section:CreateButton(options)
                 options = options or {}
                 local text = options.Text or "Button"
@@ -939,7 +893,6 @@ function Library:CreateWindow(options)
                 }
             end
             
-            -- Toggle
             function Section:CreateToggle(options)
                 options = options or {}
                 local text = options.Text or "Toggle"
@@ -1055,7 +1008,6 @@ function Library:CreateWindow(options)
                 }
             end
             
-            -- Slider
             function Section:CreateSlider(options)
                 options = options or {}
                 local text = options.Text or "Slider"
@@ -1220,7 +1172,6 @@ function Library:CreateWindow(options)
                 }
             end
             
-            -- Dropdown (Single & Multi)
             function Section:CreateDropdown(options)
                 options = options or {}
                 local text = options.Text or "Dropdown"
@@ -1595,7 +1546,6 @@ function Library:CreateWindow(options)
                 }
             end
             
-            -- Input
             function Section:CreateInput(options)
                 options = options or {}
                 local text = options.Text or "Input"
@@ -1698,7 +1648,7 @@ function Library:CreateWindow(options)
                     if not isLocked then Tween(BoxFrame, {BackgroundColor3 = Config.MainColor}) end
                 end)
                 
-                                return {
+                return {
                     SetText = function(_, t) if not isLocked then TextBox.Text = t end end,
                     GetText = function() return TextBox.Text end,
                     SetLocked = function(_, state)
@@ -1713,7 +1663,6 @@ function Library:CreateWindow(options)
                 }
             end
             
-            -- ColorPicker
             function Section:CreateColorPicker(options)
                 options = options or {}
                 local text = options.Text or "Color"
@@ -1955,7 +1904,6 @@ function Library:CreateWindow(options)
                 }
             end
             
-            -- Keybind
             function Section:CreateKeybind(options)
                 options = options or {}
                 local text = options.Text or "Keybind"
@@ -2089,7 +2037,6 @@ function Library:CreateWindow(options)
         return Tab
     end
     
-    -- Notification
     function Window:Notify(options)
         options = options or {}
         local title = options.Title or "Notification"
@@ -2213,7 +2160,6 @@ function Library:CreateWindow(options)
         end)
     end
     
-    -- Dialog (FIXED)
     function Window:CreateDialog(options)
         options = options or {}
         local title = options.Title or "Dialog"
@@ -2372,7 +2318,6 @@ function Library:CreateWindow(options)
         end)
     end
     
-    -- Toggle visibility
     function Window:Toggle()
         MainFrame.Visible = not MainFrame.Visible
         if MobileToggle then
@@ -2381,7 +2326,6 @@ function Library:CreateWindow(options)
         end
     end
     
-    -- Destroy
     function Window:Destroy()
         ScreenGui:Destroy()
     end
