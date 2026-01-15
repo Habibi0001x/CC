@@ -3,10 +3,8 @@ local CoreGui = cloneref(game:GetService("CoreGui"))
 local TweenService = cloneref(game:GetService("TweenService"))
 local UserInputService = cloneref(game:GetService("UserInputService"))
 local HttpService = cloneref(game:GetService("HttpService"))
-local Players = cloneref(game:GetService("Players"))
 
 local KeySystem = {}
-KeySystem.__index = KeySystem
 
 local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled
 
@@ -193,12 +191,6 @@ local Themes = {
     }
 }
 
-local Config = {}
-for key, value in pairs(Themes.Default) do
-    Config[key] = value
-end
-Config.TweenSpeed = 0.15
-
 local Fonts = {
     Regular = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
     Medium = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal),
@@ -211,73 +203,52 @@ local iconsLoaded = false
 
 local function LoadIcons()
     if iconsLoaded then return end
-    local success, result = pcall(function()
+    local s, r = pcall(function()
         return loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/Icons/refs/heads/main/lucide/dist/Icons.lua"))()
     end)
-    if success and type(result) == "table" then
-        Icons = result
+    if s and type(r) == "table" then
+        Icons = r
         iconsLoaded = true
     end
 end
 LoadIcons()
 
-local function IsAssetId(str)
-    if not str then return false end
-    str = tostring(str)
-    if string.match(str, "^rbxassetid://") then return true end
-    if string.match(str, "^rbxasset://") then return true end
-    if string.match(str, "^https?://") then return true end
-    if tonumber(str) then return true end
-    return false
-end
-
 local function GetIcon(name)
     if not name then return "" end
-    
     local str = tostring(name)
-    
-    if IsAssetId(str) then
-        if tonumber(str) then
-            return "rbxassetid://" .. str
-        end
+    if string.match(str, "^rbxassetid://") or string.match(str, "^rbxasset://") or string.match(str, "^https?://") then
         return str
     end
-    
+    if tonumber(str) then
+        return "rbxassetid://" .. str
+    end
     local lower = string.lower(str)
-    if Icons[lower] then return Icons[lower] end
-    if Icons[str] then return Icons[str] end
-    return Icons["circle"] or ""
+    return Icons[lower] or Icons[str] or ""
 end
 
-local function Create(class, properties)
-    local instance = Instance.new(class)
-    for prop, value in pairs(properties) do
-        if prop ~= "Parent" then
-            pcall(function() instance[prop] = value end)
+local function Create(class, props)
+    local inst = Instance.new(class)
+    for k, v in pairs(props) do
+        if k ~= "Parent" then
+            pcall(function() inst[k] = v end)
         end
     end
-    if properties.Parent then
-        instance.Parent = properties.Parent
-    end
-    return instance
+    if props.Parent then inst.Parent = props.Parent end
+    return inst
 end
 
-local function Tween(instance, properties, duration)
-    if not instance or not instance.Parent then return end
-    duration = duration or Config.TweenSpeed
-    local tween = TweenService:Create(instance, TweenInfo.new(duration, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), properties)
-    tween:Play()
-    return tween
+local function Tween(inst, props, dur)
+    if not inst or not inst.Parent then return end
+    local t = TweenService:Create(inst, TweenInfo.new(dur or 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), props)
+    t:Play()
+    return t
 end
 
-local function AddCorner(instance, radius)
-    return Create("UICorner", {
-        CornerRadius = UDim.new(0, radius or 8),
-        Parent = instance
-    })
+local function AddCorner(inst, rad)
+    return Create("UICorner", {CornerRadius = UDim.new(0, rad or 8), Parent = inst})
 end
 
-local function AddShadow(instance)
+local function AddShadow(inst)
     return Create("ImageLabel", {
         Name = "Shadow",
         BackgroundTransparency = 1,
@@ -289,27 +260,23 @@ local function AddShadow(instance)
         Size = UDim2.new(1, 47, 1, 47),
         Position = UDim2.new(0, -23, 0, -23),
         ZIndex = -1,
-        Parent = instance
+        Parent = inst
     })
 end
 
 local function MakeDraggable(frame, handle)
     handle = handle or frame
     local dragging, dragStart, startPos
-
     handle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = frame.Position
             input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
             end)
         end
     end)
-
     UserInputService.InputChanged:Connect(function(input)
         if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - dragStart
@@ -318,99 +285,31 @@ local function MakeDraggable(frame, handle)
     end)
 end
 
-local function AddRipple(button)
+local function AddRipple(btn)
     local ripple = Create("Frame", {
-        Name = "Ripple",
         BackgroundColor3 = Color3.fromRGB(255, 255, 255),
         BackgroundTransparency = 0.85,
         Position = UDim2.new(0.5, 0, 0.5, 0),
         Size = UDim2.new(0, 0, 0, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
         ZIndex = 10,
-        Parent = button
+        Parent = btn
     })
     AddCorner(ripple, 100)
-    
-    local size = math.max(button.AbsoluteSize.X, button.AbsoluteSize.Y) * 2
+    local size = math.max(btn.AbsoluteSize.X, btn.AbsoluteSize.Y) * 2
     Tween(ripple, {Size = UDim2.new(0, size, 0, size), BackgroundTransparency = 1}, 0.35)
-    
     task.delay(0.35, function()
-        if ripple and ripple.Parent then
-            ripple:Destroy()
-        end
+        if ripple and ripple.Parent then ripple:Destroy() end
     end)
 end
 
-local function ParseIconSize(size, default)
-    if not size then return default, default end
-    
-    if type(size) == "number" then
-        return size, size
-    end
-    
-    if type(size) == "table" then
-        return size.X or size[1] or default, size.Y or size[2] or default
-    end
-    
-    if typeof(size) == "Vector2" then
-        return size.X, size.Y
-    end
-    
-    if typeof(size) == "UDim2" then
-        return size.X.Offset, size.Y.Offset
-    end
-    
-    return default, default
-end
-
-local function CreateButton(parent, config)
-    local button = Create("TextButton", {
-        Name = config.Name,
-        BackgroundColor3 = config.BackgroundColor,
-        Size = UDim2.new(0, config.Width, 0, config.Height),
-        Text = "",
-        AutoButtonColor = false,
-        ClipsDescendants = true,
-        LayoutOrder = config.LayoutOrder,
-        Parent = parent
-    })
-    AddCorner(button, 8)
-    
-    local icon = Create("ImageLabel", {
-        Name = "Icon",
-        BackgroundTransparency = 1,
-        Image = GetIcon(config.Icon),
-        ImageColor3 = config.IconColor,
-        Size = UDim2.new(0, config.IconSize, 0, config.IconSize),
-        Position = UDim2.new(0, 10, 0.5, 0),
-        AnchorPoint = Vector2.new(0, 0.5),
-        ScaleType = Enum.ScaleType.Fit,
-        Parent = button
-    })
-    
-    local label = Create("TextLabel", {
-        Name = "Label",
-        BackgroundTransparency = 1,
-        Text = config.Text,
-        TextColor3 = config.TextColor,
-        FontFace = Fonts.Medium,
-        TextSize = isMobile and 12 or 11,
-        TextXAlignment = Enum.TextXAlignment.Center,
-        Size = UDim2.new(1, -30, 1, 0),
-        Position = UDim2.new(0, 28, 0, 0),
-        Parent = button
-    })
-    
-    return button, icon, label
-end
-
 function KeySystem:GetThemes()
-    local themeList = {}
+    local list = {}
     for name in pairs(Themes) do
-        table.insert(themeList, name)
+        table.insert(list, name)
     end
-    table.sort(themeList)
-    return themeList
+    table.sort(list)
+    return list
 end
 
 function KeySystem:Create(options)
@@ -420,24 +319,22 @@ function KeySystem:Create(options)
     local description = options.Description or "Please enter your key to continue"
     local icon = options.Icon or "key"
     local centerIcon = options.CenterIcon or "lock"
-    local iconSize = options.IconSize
-    local centerIconSize = options.CenterIconSize
     local keys = options.Keys or {}
     local keyLink = options.KeyLink or ""
     local discordLink = options.DiscordLink or ""
     local savePath = options.SavePath or "KeyData.json"
     local onSuccess = options.OnSuccess or function() end
     local onFailed = options.OnFailed or function() end
-    local theme = options.Theme or "Default"
+    local themeName = options.Theme or "Default"
     
-    -- Apply theme
-    if Themes[theme] then
-        for key, value in pairs(Themes[theme]) do
-            Config[key] = value
-        end
+    -- Build config from theme
+    local Config = {}
+    local baseTheme = Themes[themeName] or Themes.Default
+    for k, v in pairs(baseTheme) do
+        Config[k] = v
     end
     
-    -- Custom color overrides
+    -- Apply custom overrides
     if options.MainColor then Config.MainColor = options.MainColor end
     if options.SecondaryColor then Config.SecondaryColor = options.SecondaryColor end
     if options.AccentColor then Config.AccentColor = options.AccentColor end
@@ -446,29 +343,21 @@ function KeySystem:Create(options)
     if options.BorderColor then Config.BorderColor = options.BorderColor end
     if options.DiscordColor then Config.DiscordColor = options.DiscordColor end
     
-    local titleIconDefault = isMobile and 24 or 22
-    local centerIconDefault = isMobile and 28 or 24
-    
-    local titleIconSizeX, titleIconSizeY = ParseIconSize(iconSize, titleIconDefault)
-    local centerIconSizeX, centerIconSizeY = ParseIconSize(centerIconSize, centerIconDefault)
-    
-    local centerContainerSize = math.max(centerIconSizeX, centerIconSizeY) + (isMobile and 36 or 32)
-    
+    -- Remove existing
     local existing = CoreGui:FindFirstChild("KeySystemUI")
     if existing then existing:Destroy() end
     
+    -- Check saved key
     local function CheckSavedKey()
         if not isfile then return false end
-        local success, data = pcall(function()
+        local s, data = pcall(function()
             if isfile(savePath) then
                 return HttpService:JSONDecode(readfile(savePath))
             end
         end)
-        if success and data and data.Key then
+        if s and data and data.Key then
             for _, key in ipairs(keys) do
-                if data.Key == key then
-                    return true
-                end
+                if data.Key == key then return true end
             end
         end
         return false
@@ -483,35 +372,27 @@ function KeySystem:Create(options)
     
     if CheckSavedKey() then
         task.spawn(onSuccess)
-        return {
-            Destroy = function() end,
-            SetStatus = function() end,
-            SetIcon = function() end,
-            SetCenterIcon = function() end,
-            SetTheme = function() end
-        }
+        return {}
     end
+    
+    -- Sizes
+    local frameW = isMobile and 360 or 420
+    local frameH = isMobile and 320 or 340
+    local titleBarH = isMobile and 56 or 48
+    local btnH = isMobile and 38 or 34
+    local iconS = isMobile and 16 or 14
     
     -- Count buttons
     local hasDiscord = discordLink ~= ""
     local hasGetKey = keyLink ~= ""
-    local buttonCount = 1 + (hasDiscord and 1 or 0) + (hasGetKey and 1 or 0)
+    local btnCount = 1 + (hasDiscord and 1 or 0) + (hasGetKey and 1 or 0)
     
-    local buttonWidth
-    if buttonCount == 1 then
-        buttonWidth = isMobile and 200 or 180
-    elseif buttonCount == 2 then
-        buttonWidth = isMobile and 145 or 135
-    else
-        buttonWidth = isMobile and 100 or 95
-    end
+    local btnW
+    if btnCount == 1 then btnW = isMobile and 180 or 160
+    elseif btnCount == 2 then btnW = isMobile and 140 or 130
+    else btnW = isMobile and 100 or 92 end
     
-    local buttonHeight = isMobile and 40 or 36
-    local buttonIconSize = isMobile and 16 or 14
-    
-    local frameWidth = isMobile and 360 or 420
-    local frameHeight = isMobile and 320 or 340
-    
+    -- UI
     local ScreenGui = Create("ScreenGui", {
         Name = "KeySystemUI",
         ResetOnSpawn = false,
@@ -523,7 +404,7 @@ function KeySystem:Create(options)
     local Background = Create("Frame", {
         Name = "Background",
         BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-        BackgroundTransparency = 0.3,
+        BackgroundTransparency = 1,
         Size = UDim2.new(1, 0, 1, 0),
         Parent = ScreenGui
     })
@@ -531,7 +412,7 @@ function KeySystem:Create(options)
     local MainFrame = Create("Frame", {
         Name = "MainFrame",
         BackgroundColor3 = Config.MainColor,
-        Size = UDim2.new(0, frameWidth, 0, frameHeight),
+        Size = UDim2.new(0, 0, 0, 0),
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
         ClipsDescendants = true,
@@ -540,16 +421,16 @@ function KeySystem:Create(options)
     AddCorner(MainFrame, 12)
     AddShadow(MainFrame)
     
-    -- Title Bar
+    -- TitleBar
     local TitleBar = Create("Frame", {
         Name = "TitleBar",
         BackgroundColor3 = Config.MainColor,
-        Size = UDim2.new(1, 0, 0, isMobile and 56 or 48),
+        Size = UDim2.new(1, 0, 0, titleBarH),
         BorderSizePixel = 0,
         Parent = MainFrame
     })
     
-    local Divider = Create("Frame", {
+    Create("Frame", {
         Name = "Divider",
         BackgroundColor3 = Config.BorderColor,
         Size = UDim2.new(1, 0, 0, 1),
@@ -563,16 +444,14 @@ function KeySystem:Create(options)
         BackgroundTransparency = 1,
         Image = GetIcon(icon),
         ImageColor3 = Config.AccentColor,
-        Size = UDim2.new(0, titleIconSizeX, 0, titleIconSizeY),
+        Size = UDim2.new(0, isMobile and 24 or 22, 0, isMobile and 24 or 22),
         Position = UDim2.new(0, 16, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
         ScaleType = Enum.ScaleType.Fit,
         Parent = TitleBar
     })
     
-    local titlePosX = 16 + titleIconSizeX + 10
-    
-    local TitleLabel = Create("TextLabel", {
+    Create("TextLabel", {
         Name = "Title",
         BackgroundTransparency = 1,
         Text = title,
@@ -580,13 +459,12 @@ function KeySystem:Create(options)
         FontFace = Fonts.SemiBold,
         TextSize = isMobile and 16 or 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Size = UDim2.new(1, -titlePosX - 50, 1, 0),
-        Position = UDim2.new(0, titlePosX, 0, 0),
+        Size = UDim2.new(1, -100, 1, 0),
+        Position = UDim2.new(0, isMobile and 50 or 46, 0, 0),
         Parent = TitleBar
     })
     
-    -- Close Button
-    local CloseButton = Create("TextButton", {
+    local CloseBtn = Create("TextButton", {
         Name = "Close",
         BackgroundColor3 = Config.SecondaryColor,
         Size = UDim2.new(0, isMobile and 32 or 28, 0, isMobile and 32 or 28),
@@ -596,7 +474,7 @@ function KeySystem:Create(options)
         AutoButtonColor = false,
         Parent = TitleBar
     })
-    AddCorner(CloseButton, 6)
+    AddCorner(CloseBtn, 6)
     
     local CloseIcon = Create("ImageLabel", {
         BackgroundTransparency = 1,
@@ -605,22 +483,19 @@ function KeySystem:Create(options)
         Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
-        ScaleType = Enum.ScaleType.Fit,
-        Parent = CloseButton
+        Parent = CloseBtn
     })
     
-    CloseButton.MouseEnter:Connect(function()
-        Tween(CloseButton, {BackgroundColor3 = Color3.fromRGB(200, 60, 60)})
+    CloseBtn.MouseEnter:Connect(function()
+        Tween(CloseBtn, {BackgroundColor3 = Color3.fromRGB(200, 60, 60)})
         Tween(CloseIcon, {ImageColor3 = Color3.fromRGB(255, 255, 255)})
     end)
-    
-    CloseButton.MouseLeave:Connect(function()
-        Tween(CloseButton, {BackgroundColor3 = Config.SecondaryColor})
+    CloseBtn.MouseLeave:Connect(function()
+        Tween(CloseBtn, {BackgroundColor3 = Config.SecondaryColor})
         Tween(CloseIcon, {ImageColor3 = Config.SecondaryTextColor})
     end)
-    
-    CloseButton.MouseButton1Click:Connect(function()
-        AddRipple(CloseButton)
+    CloseBtn.MouseButton1Click:Connect(function()
+        AddRipple(CloseBtn)
         Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
         task.delay(0.2, function()
             ScreenGui:Destroy()
@@ -632,38 +507,37 @@ function KeySystem:Create(options)
     local Content = Create("Frame", {
         Name = "Content",
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, -32, 1, isMobile and -72 or -64),
-        Position = UDim2.new(0, 16, 0, isMobile and 64 or 56),
+        Size = UDim2.new(1, -32, 1, -titleBarH - 16),
+        Position = UDim2.new(0, 16, 0, titleBarH + 8),
         Parent = MainFrame
     })
     
-    -- Center Icon Container
+    -- Center Icon
+    local centerSize = isMobile and 60 or 56
     local CenterContainer = Create("Frame", {
         Name = "CenterContainer",
         BackgroundColor3 = Config.SecondaryColor,
-        Size = UDim2.new(0, centerContainerSize, 0, centerContainerSize),
+        Size = UDim2.new(0, centerSize, 0, centerSize),
         Position = UDim2.new(0.5, 0, 0, 0),
         AnchorPoint = Vector2.new(0.5, 0),
         Parent = Content
     })
-    AddCorner(CenterContainer, centerContainerSize / 2)
+    AddCorner(CenterContainer, centerSize / 2)
     
     local CenterIcon = Create("ImageLabel", {
         Name = "CenterIcon",
         BackgroundTransparency = 1,
         Image = GetIcon(centerIcon),
         ImageColor3 = Config.AccentColor,
-        Size = UDim2.new(0, centerIconSizeX, 0, centerIconSizeY),
+        Size = UDim2.new(0, isMobile and 28 or 24, 0, isMobile and 28 or 24),
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
         ScaleType = Enum.ScaleType.Fit,
         Parent = CenterContainer
     })
     
-    local descPosY = centerContainerSize + 12
-    
     -- Description
-    local DescLabel = Create("TextLabel", {
+    Create("TextLabel", {
         Name = "Description",
         BackgroundTransparency = 1,
         Text = description,
@@ -671,19 +545,18 @@ function KeySystem:Create(options)
         FontFace = Fonts.Regular,
         TextSize = isMobile and 13 or 12,
         TextWrapped = true,
-        Size = UDim2.new(1, 0, 0, 40),
-        Position = UDim2.new(0, 0, 0, descPosY),
+        Size = UDim2.new(1, 0, 0, 36),
+        Position = UDim2.new(0, 0, 0, centerSize + 12),
         Parent = Content
     })
     
-    local inputPosY = descPosY + 48
-    
-    -- Input Container
+    -- Input
+    local inputY = centerSize + 52
     local InputContainer = Create("Frame", {
         Name = "InputContainer",
         BackgroundColor3 = Config.SecondaryColor,
-        Size = UDim2.new(1, 0, 0, isMobile and 48 or 44),
-        Position = UDim2.new(0, 0, 0, inputPosY),
+        Size = UDim2.new(1, 0, 0, isMobile and 46 or 42),
+        Position = UDim2.new(0, 0, 0, inputY),
         Parent = Content
     })
     AddCorner(InputContainer, 8)
@@ -696,7 +569,6 @@ function KeySystem:Create(options)
         Size = UDim2.new(0, isMobile and 18 or 16, 0, isMobile and 18 or 16),
         Position = UDim2.new(0, 12, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
-        ScaleType = Enum.ScaleType.Fit,
         Parent = InputContainer
     })
     
@@ -711,8 +583,8 @@ function KeySystem:Create(options)
         TextSize = isMobile and 13 or 12,
         TextXAlignment = Enum.TextXAlignment.Left,
         ClearTextOnFocus = false,
-        Size = UDim2.new(1, -48, 1, 0),
-        Position = UDim2.new(0, isMobile and 38 or 36, 0, 0),
+        Size = UDim2.new(1, -46, 1, 0),
+        Position = UDim2.new(0, 36, 0, 0),
         Parent = InputContainer
     })
     
@@ -720,15 +592,13 @@ function KeySystem:Create(options)
         Tween(InputContainer, {BackgroundColor3 = Config.BorderColor})
         Tween(InputIcon, {ImageColor3 = Config.AccentColor})
     end)
-    
     KeyInput.FocusLost:Connect(function()
         Tween(InputContainer, {BackgroundColor3 = Config.SecondaryColor})
         Tween(InputIcon, {ImageColor3 = Config.SecondaryTextColor})
     end)
     
-    local statusPosY = inputPosY + (isMobile and 56 or 52)
-    
-    -- Status Label
+    -- Status
+    local statusY = inputY + (isMobile and 52 or 48)
     local StatusLabel = Create("TextLabel", {
         Name = "Status",
         BackgroundTransparency = 1,
@@ -737,205 +607,118 @@ function KeySystem:Create(options)
         FontFace = Fonts.Regular,
         TextSize = isMobile and 11 or 10,
         Size = UDim2.new(1, 0, 0, 16),
-        Position = UDim2.new(0, 0, 0, statusPosY),
+        Position = UDim2.new(0, 0, 0, statusY),
         Parent = Content
     })
     
-    -- Buttons Container
+    -- Buttons
     local ButtonsContainer = Create("Frame", {
         Name = "Buttons",
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, buttonHeight),
-        Position = UDim2.new(0, 0, 1, -buttonHeight),
+        Size = UDim2.new(1, 0, 0, btnH),
+        Position = UDim2.new(0, 0, 1, -btnH),
         Parent = Content
     })
     
-    Create("UIListLayout", {
-        FillDirection = Enum.FillDirection.Horizontal,
-        HorizontalAlignment = Enum.HorizontalAlignment.Center,
-        VerticalAlignment = Enum.VerticalAlignment.Center,
-        Padding = UDim.new(0, 8),
-        SortOrder = Enum.SortOrder.LayoutOrder,
-        Parent = ButtonsContainer
-    })
+    -- Manually position buttons instead of UIListLayout
+    local totalWidth = btnW * btnCount + 8 * (btnCount - 1)
+    local startX = (ButtonsContainer.AbsoluteSize.X - totalWidth) / 2
+    local currentX = 0
     
-    local layoutOrder = 0
-    local allButtons = {}
-    
-    -- Discord Button
-    if hasDiscord then
-        local DiscordButton = Create("TextButton", {
-            Name = "Discord",
-            BackgroundColor3 = Config.DiscordColor,
-            Size = UDim2.new(0, buttonWidth, 0, buttonHeight),
+    local function CreateBtn(name, bgColor, iconName, iconColor, labelText, labelColor, order)
+        local xPos = (frameW - 32 - totalWidth) / 2 + order * (btnW + 8)
+        
+        local btn = Create("TextButton", {
+            Name = name,
+            BackgroundColor3 = bgColor,
+            Size = UDim2.new(0, btnW, 0, btnH),
+            Position = UDim2.new(0, xPos, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
             Text = "",
             AutoButtonColor = false,
             ClipsDescendants = true,
-            LayoutOrder = layoutOrder,
             Parent = ButtonsContainer
         })
-        AddCorner(DiscordButton, 8)
-        layoutOrder = layoutOrder + 1
+        AddCorner(btn, 8)
         
         Create("ImageLabel", {
             Name = "Icon",
             BackgroundTransparency = 1,
-            Image = GetIcon("message-circle"),
-            ImageColor3 = Color3.fromRGB(255, 255, 255),
-            Size = UDim2.new(0, buttonIconSize, 0, buttonIconSize),
+            Image = GetIcon(iconName),
+            ImageColor3 = iconColor,
+            Size = UDim2.new(0, iconS, 0, iconS),
             Position = UDim2.new(0, 10, 0.5, 0),
             AnchorPoint = Vector2.new(0, 0.5),
-            ScaleType = Enum.ScaleType.Fit,
-            Parent = DiscordButton
+            Parent = btn
         })
         
         Create("TextLabel", {
             Name = "Label",
             BackgroundTransparency = 1,
-            Text = buttonCount >= 3 and "Discord" or "Join Discord",
-            TextColor3 = Color3.fromRGB(255, 255, 255),
+            Text = labelText,
+            TextColor3 = labelColor,
             FontFace = Fonts.Medium,
             TextSize = isMobile and 12 or 11,
-            TextXAlignment = Enum.TextXAlignment.Center,
             Size = UDim2.new(1, -28, 1, 0),
             Position = UDim2.new(0, 26, 0, 0),
-            Parent = DiscordButton
+            Parent = btn
         })
         
-        DiscordButton.MouseEnter:Connect(function()
-            Tween(DiscordButton, {BackgroundColor3 = Color3.fromRGB(108, 121, 255)})
-        end)
+        return btn
+    end
+    
+    local order = 0
+    
+    -- Discord Button
+    if hasDiscord then
+        local DiscordBtn = CreateBtn("Discord", Config.DiscordColor, "message-circle", Color3.new(1,1,1), btnCount >= 3 and "Discord" or "Join Discord", Color3.new(1,1,1), order)
+        order = order + 1
         
-        DiscordButton.MouseLeave:Connect(function()
-            Tween(DiscordButton, {BackgroundColor3 = Config.DiscordColor})
+        DiscordBtn.MouseEnter:Connect(function()
+            Tween(DiscordBtn, {BackgroundColor3 = Color3.fromRGB(108, 121, 255)})
         end)
-        
-        DiscordButton.MouseButton1Click:Connect(function()
-            AddRipple(DiscordButton)
+        DiscordBtn.MouseLeave:Connect(function()
+            Tween(DiscordBtn, {BackgroundColor3 = Config.DiscordColor})
+        end)
+        DiscordBtn.MouseButton1Click:Connect(function()
+            AddRipple(DiscordBtn)
             if setclipboard then
                 setclipboard(discordLink)
                 StatusLabel.Text = "Discord link copied!"
                 StatusLabel.TextColor3 = Config.DiscordColor
-                task.delay(2, function()
-                    if StatusLabel and StatusLabel.Parent then
-                        StatusLabel.Text = ""
-                    end
-                end)
             end
         end)
-        
-        table.insert(allButtons, {Button = DiscordButton, Type = "Discord"})
     end
     
     -- Get Key Button
     if hasGetKey then
-        local GetKeyButton = Create("TextButton", {
-            Name = "GetKey",
-            BackgroundColor3 = Config.SecondaryColor,
-            Size = UDim2.new(0, buttonWidth, 0, buttonHeight),
-            Text = "",
-            AutoButtonColor = false,
-            ClipsDescendants = true,
-            LayoutOrder = layoutOrder,
-            Parent = ButtonsContainer
-        })
-        AddCorner(GetKeyButton, 8)
-        layoutOrder = layoutOrder + 1
+        local GetKeyBtn = CreateBtn("GetKey", Config.SecondaryColor, "external-link", Config.TextColor, "Get Key", Config.TextColor, order)
+        order = order + 1
         
-        local GetKeyIconEl = Create("ImageLabel", {
-            Name = "Icon",
-            BackgroundTransparency = 1,
-            Image = GetIcon("external-link"),
-            ImageColor3 = Config.TextColor,
-            Size = UDim2.new(0, buttonIconSize, 0, buttonIconSize),
-            Position = UDim2.new(0, 10, 0.5, 0),
-            AnchorPoint = Vector2.new(0, 0.5),
-            ScaleType = Enum.ScaleType.Fit,
-            Parent = GetKeyButton
-        })
-        
-        local GetKeyLabelEl = Create("TextLabel", {
-            Name = "Label",
-            BackgroundTransparency = 1,
-            Text = buttonCount >= 3 and "Get Key" or "Get Key",
-            TextColor3 = Config.TextColor,
-            FontFace = Fonts.Medium,
-            TextSize = isMobile and 12 or 11,
-            TextXAlignment = Enum.TextXAlignment.Center,
-            Size = UDim2.new(1, -28, 1, 0),
-            Position = UDim2.new(0, 26, 0, 0),
-            Parent = GetKeyButton
-        })
-        
-        GetKeyButton.MouseEnter:Connect(function()
-            Tween(GetKeyButton, {BackgroundColor3 = Config.BorderColor})
+        GetKeyBtn.MouseEnter:Connect(function()
+            Tween(GetKeyBtn, {BackgroundColor3 = Config.BorderColor})
         end)
-        
-        GetKeyButton.MouseLeave:Connect(function()
-            Tween(GetKeyButton, {BackgroundColor3 = Config.SecondaryColor})
+        GetKeyBtn.MouseLeave:Connect(function()
+            Tween(GetKeyBtn, {BackgroundColor3 = Config.SecondaryColor})
         end)
-        
-        GetKeyButton.MouseButton1Click:Connect(function()
-            AddRipple(GetKeyButton)
+        GetKeyBtn.MouseButton1Click:Connect(function()
+            AddRipple(GetKeyBtn)
             if setclipboard then
                 setclipboard(keyLink)
                 StatusLabel.Text = "Key link copied!"
                 StatusLabel.TextColor3 = Config.SuccessColor
-                task.delay(2, function()
-                    if StatusLabel and StatusLabel.Parent then
-                        StatusLabel.Text = ""
-                    end
-                end)
             end
         end)
-        
-        table.insert(allButtons, {Button = GetKeyButton, Type = "GetKey", Icon = GetKeyIconEl, Label = GetKeyLabelEl})
     end
     
     -- Verify Button
-    local VerifyButton = Create("TextButton", {
-        Name = "Verify",
-        BackgroundColor3 = Config.AccentColor,
-        Size = UDim2.new(0, buttonWidth, 0, buttonHeight),
-        Text = "",
-        AutoButtonColor = false,
-        ClipsDescendants = true,
-        LayoutOrder = layoutOrder,
-        Parent = ButtonsContainer
-    })
-    AddCorner(VerifyButton, 8)
+    local VerifyBtn = CreateBtn("Verify", Config.AccentColor, "check", Config.MainColor, "Verify", Config.MainColor, order)
     
-    local VerifyIcon = Create("ImageLabel", {
-        Name = "Icon",
-        BackgroundTransparency = 1,
-        Image = GetIcon("check"),
-        ImageColor3 = Config.MainColor,
-        Size = UDim2.new(0, buttonIconSize, 0, buttonIconSize),
-        Position = UDim2.new(0, 10, 0.5, 0),
-        AnchorPoint = Vector2.new(0, 0.5),
-        ScaleType = Enum.ScaleType.Fit,
-        Parent = VerifyButton
-    })
-    
-    local VerifyLabel = Create("TextLabel", {
-        Name = "Label",
-        BackgroundTransparency = 1,
-        Text = "Verify",
-        TextColor3 = Config.MainColor,
-        FontFace = Fonts.Medium,
-        TextSize = isMobile and 12 or 11,
-        TextXAlignment = Enum.TextXAlignment.Center,
-        Size = UDim2.new(1, -28, 1, 0),
-        Position = UDim2.new(0, 26, 0, 0),
-        Parent = VerifyButton
-    })
-    
-    VerifyButton.MouseEnter:Connect(function()
-        Tween(VerifyButton, {BackgroundColor3 = Config.TextColor})
+    VerifyBtn.MouseEnter:Connect(function()
+        Tween(VerifyBtn, {BackgroundColor3 = Config.TextColor})
     end)
-    
-    VerifyButton.MouseLeave:Connect(function()
-        Tween(VerifyButton, {BackgroundColor3 = Config.AccentColor})
+    VerifyBtn.MouseLeave:Connect(function()
+        Tween(VerifyBtn, {BackgroundColor3 = Config.AccentColor})
     end)
     
     local function VerifyKey()
@@ -944,149 +727,83 @@ function KeySystem:Create(options)
         if inputKey == "" then
             StatusLabel.Text = "Please enter a key!"
             StatusLabel.TextColor3 = Config.WarningColor
-            
-            local originalPos = InputContainer.Position
+            local orig = InputContainer.Position
             for i = 1, 4 do
-                Tween(InputContainer, {Position = originalPos + UDim2.new(0, i % 2 == 0 and 6 or -6, 0, 0)}, 0.04)
+                Tween(InputContainer, {Position = orig + UDim2.new(0, i % 2 == 0 and 6 or -6, 0, 0)}, 0.04)
                 task.wait(0.04)
             end
-            Tween(InputContainer, {Position = originalPos}, 0.04)
+            Tween(InputContainer, {Position = orig}, 0.04)
             return
         end
         
         local valid = false
         for _, key in ipairs(keys) do
-            if inputKey == key then
-                valid = true
-                break
-            end
+            if inputKey == key then valid = true break end
         end
         
         if valid then
-            StatusLabel.Text = "Key verified successfully!"
+            StatusLabel.Text = "Key verified!"
             StatusLabel.TextColor3 = Config.SuccessColor
             CenterIcon.Image = GetIcon("unlock")
             Tween(CenterIcon, {ImageColor3 = Config.SuccessColor})
             Tween(CenterContainer, {BackgroundColor3 = Color3.fromRGB(30, 60, 30)})
-            Tween(InputIcon, {ImageColor3 = Config.SuccessColor})
             Tween(InputContainer, {BackgroundColor3 = Color3.fromRGB(30, 60, 30)})
-            
+            Tween(InputIcon, {ImageColor3 = Config.SuccessColor})
             SaveKey(inputKey)
-            
-            task.delay(1.2, function()
-                Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.25)
-                Tween(Background, {BackgroundTransparency = 1}, 0.25)
-                task.delay(0.25, function()
+            task.delay(1, function()
+                Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
+                Tween(Background, {BackgroundTransparency = 1}, 0.2)
+                task.delay(0.2, function()
                     ScreenGui:Destroy()
                     task.spawn(onSuccess)
                 end)
             end)
         else
-            StatusLabel.Text = "Invalid key! Please try again."
+            StatusLabel.Text = "Invalid key!"
             StatusLabel.TextColor3 = Config.ErrorColor
-            
             Tween(InputContainer, {BackgroundColor3 = Color3.fromRGB(60, 30, 30)}, 0.1)
             Tween(InputIcon, {ImageColor3 = Config.ErrorColor}, 0.1)
+            local orig = InputContainer.Position
+            for i = 1, 6 do
+                Tween(InputContainer, {Position = orig + UDim2.new(0, i % 2 == 0 and 8 or -8, 0, 0)}, 0.04)
+                task.wait(0.04)
+            end
+            Tween(InputContainer, {Position = orig}, 0.04)
             task.delay(0.5, function()
                 Tween(InputContainer, {BackgroundColor3 = Config.SecondaryColor}, 0.2)
                 Tween(InputIcon, {ImageColor3 = Config.SecondaryTextColor}, 0.2)
             end)
-            
-            local originalPos = InputContainer.Position
-            for i = 1, 6 do
-                Tween(InputContainer, {Position = originalPos + UDim2.new(0, i % 2 == 0 and 8 or -8, 0, 0)}, 0.04)
-                task.wait(0.04)
-            end
-            Tween(InputContainer, {Position = originalPos}, 0.04)
         end
     end
     
-    VerifyButton.MouseButton1Click:Connect(function()
-        AddRipple(VerifyButton)
+    VerifyBtn.MouseButton1Click:Connect(function()
+        AddRipple(VerifyBtn)
         VerifyKey()
     end)
     
-    KeyInput.FocusLost:Connect(function(enterPressed)
-        if enterPressed then
-            VerifyKey()
-        end
+    KeyInput.FocusLost:Connect(function(enter)
+        if enter then VerifyKey() end
     end)
     
     MakeDraggable(MainFrame, TitleBar)
     
-    -- Entrance animation
-    local targetSize = UDim2.new(0, frameWidth, 0, frameHeight)
-    MainFrame.Size = UDim2.new(0, 0, 0, 0)
-    Background.BackgroundTransparency = 1
-    
+    -- Animate in
     Tween(Background, {BackgroundTransparency = 0.3}, 0.2)
-    Tween(MainFrame, {Size = targetSize}, 0.3)
-    
-    -- Theme change function
-    local function ApplyTheme(themeName)
-        if not Themes[themeName] then return end
-        
-        for key, value in pairs(Themes[themeName]) do
-            Config[key] = value
-        end
-        
-        MainFrame.BackgroundColor3 = Config.MainColor
-        TitleBar.BackgroundColor3 = Config.MainColor
-        Divider.BackgroundColor3 = Config.BorderColor
-        TitleIcon.ImageColor3 = Config.AccentColor
-        TitleLabel.TextColor3 = Config.TextColor
-        CloseButton.BackgroundColor3 = Config.SecondaryColor
-        CloseIcon.ImageColor3 = Config.SecondaryTextColor
-        CenterContainer.BackgroundColor3 = Config.SecondaryColor
-        CenterIcon.ImageColor3 = Config.AccentColor
-        DescLabel.TextColor3 = Config.SecondaryTextColor
-        InputContainer.BackgroundColor3 = Config.SecondaryColor
-        InputIcon.ImageColor3 = Config.SecondaryTextColor
-        KeyInput.TextColor3 = Config.TextColor
-        KeyInput.PlaceholderColor3 = Config.SecondaryTextColor
-        StatusLabel.TextColor3 = Config.SecondaryTextColor
-        VerifyButton.BackgroundColor3 = Config.AccentColor
-        VerifyIcon.ImageColor3 = Config.MainColor
-        VerifyLabel.TextColor3 = Config.MainColor
-        
-        for _, btnData in ipairs(allButtons) do
-            if btnData.Type == "GetKey" then
-                btnData.Button.BackgroundColor3 = Config.SecondaryColor
-                if btnData.Icon then btnData.Icon.ImageColor3 = Config.TextColor end
-                if btnData.Label then btnData.Label.TextColor3 = Config.TextColor end
-            end
-        end
-    end
+    Tween(MainFrame, {Size = UDim2.new(0, frameW, 0, frameH)}, 0.3)
     
     return {
         Destroy = function()
-            if ScreenGui and ScreenGui.Parent then
-                ScreenGui:Destroy()
-            end
+            if ScreenGui and ScreenGui.Parent then ScreenGui:Destroy() end
         end,
         SetStatus = function(text, color)
             StatusLabel.Text = text
             StatusLabel.TextColor3 = color or Config.SecondaryTextColor
         end,
-        SetIcon = function(newIcon, newSize)
+        SetIcon = function(newIcon)
             TitleIcon.Image = GetIcon(newIcon)
-            if newSize then
-                local sizeX, sizeY = ParseIconSize(newSize, titleIconDefault)
-                TitleIcon.Size = UDim2.new(0, sizeX, 0, sizeY)
-            end
         end,
-        SetCenterIcon = function(newIcon, newSize)
+        SetCenterIcon = function(newIcon)
             CenterIcon.Image = GetIcon(newIcon)
-            if newSize then
-                local sizeX, sizeY = ParseIconSize(newSize, centerIconDefault)
-                CenterIcon.Size = UDim2.new(0, sizeX, 0, sizeY)
-            end
-        end,
-        SetTheme = function(themeName)
-            ApplyTheme(themeName)
-        end,
-        GetThemes = function()
-            return KeySystem:GetThemes()
         end
     }
 end
