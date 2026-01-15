@@ -48,15 +48,19 @@ LoadIcons()
 local function IsAssetId(str)
     if not str then return false end
     str = tostring(str)
+    -- Check for rbxassetid:// format
     if string.match(str, "^rbxassetid://") then
         return true
     end
+    -- Check for rbxasset:// format
     if string.match(str, "^rbxasset://") then
         return true
     end
+    -- Check for http/https URLs
     if string.match(str, "^https?://") then
         return true
     end
+    -- Check if it's just a number (asset ID)
     if tonumber(str) then
         return true
     end
@@ -68,13 +72,16 @@ local function GetIcon(name)
     
     local str = tostring(name)
     
+    -- If it's already an asset ID or URL, return it directly
     if IsAssetId(str) then
+        -- If it's just a number, convert to rbxassetid format
         if tonumber(str) then
             return "rbxassetid://" .. str
         end
         return str
     end
     
+    -- Otherwise, look up in the icons table
     local lower = string.lower(str)
     if Icons[lower] then return Icons[lower] end
     if Icons[str] then return Icons[str] end
@@ -173,39 +180,12 @@ local function AddRipple(button)
     end)
 end
 
--- Helper function to parse icon size
-local function ParseIconSize(size, default)
-    if not size then
-        return default, default
-    end
-    
-    if type(size) == "number" then
-        return size, size
-    end
-    
-    if type(size) == "table" then
-        return size.X or size[1] or default, size.Y or size[2] or default
-    end
-    
-    if typeof(size) == "Vector2" then
-        return size.X, size.Y
-    end
-    
-    if typeof(size) == "UDim2" then
-        return size.X.Offset, size.Y.Offset
-    end
-    
-    return default, default
-end
-
 function KeySystem:Create(options)
     options = options or {}
     
     local title = options.Title or "Key System"
     local description = options.Description or "Please enter your key to continue"
     local icon = options.Icon or "key"
-    local iconSize = options.IconSize -- Can be number, table {X, Y}, Vector2, or UDim2
-    local lockIconSize = options.LockIconSize -- Size for the center lock icon
     local keys = options.Keys or {}
     local keyLink = options.KeyLink or ""
     local savePath = options.SavePath or "KeyData.json"
@@ -213,18 +193,6 @@ function KeySystem:Create(options)
     local onFailed = options.OnFailed or function() end
     local maxAttempts = options.MaxAttempts or 5
     local lockoutTime = options.LockoutTime or 60
-    
-    -- Parse icon sizes
-    local titleIconDefaultSize = isMobile and 24 or 22
-    local lockIconDefaultSize = isMobile and 28 or 24
-    local lockContainerDefaultSize = isMobile and 64 or 56
-    
-    local titleIconSizeX, titleIconSizeY = ParseIconSize(iconSize, titleIconDefaultSize)
-    local lockIconSizeX, lockIconSizeY = ParseIconSize(lockIconSize, lockIconDefaultSize)
-    
-    -- Calculate lock container size based on lock icon size
-    local lockContainerSizeX = lockIconSizeX + (isMobile and 36 or 32)
-    local lockContainerSizeY = lockIconSizeY + (isMobile and 36 or 32)
     
     -- Custom colors (optional)
     if options.MainColor then Config.MainColor = options.MainColor end
@@ -324,15 +292,12 @@ function KeySystem:Create(options)
         BackgroundTransparency = 1,
         Image = GetIcon(icon),
         ImageColor3 = Config.AccentColor,
-        Size = UDim2.new(0, titleIconSizeX, 0, titleIconSizeY),
+        Size = UDim2.new(0, isMobile and 24 or 22, 0, isMobile and 24 or 22),
         Position = UDim2.new(0, 16, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
         ScaleType = Enum.ScaleType.Fit,
         Parent = TitleBar
     })
-    
-    -- Calculate title position based on icon size
-    local titlePosX = 16 + titleIconSizeX + 10
     
     local TitleLabel = Create("TextLabel", {
         Name = "Title",
@@ -342,8 +307,8 @@ function KeySystem:Create(options)
         FontFace = Fonts.SemiBold,
         TextSize = isMobile and 16 or 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Size = UDim2.new(1, -titlePosX - 50, 1, 0),
-        Position = UDim2.new(0, titlePosX, 0, 0),
+        Size = UDim2.new(1, -100, 1, 0),
+        Position = UDim2.new(0, isMobile and 50 or 46, 0, 0),
         Parent = TitleBar
     })
     
@@ -403,27 +368,24 @@ function KeySystem:Create(options)
     local LockContainer = Create("Frame", {
         Name = "LockContainer",
         BackgroundColor3 = Config.SecondaryColor,
-        Size = UDim2.new(0, lockContainerSizeX, 0, lockContainerSizeY),
+        Size = UDim2.new(0, isMobile and 64 or 56, 0, isMobile and 64 or 56),
         Position = UDim2.new(0.5, 0, 0, 0),
         AnchorPoint = Vector2.new(0.5, 0),
         Parent = Content
     })
-    AddCorner(LockContainer, math.min(lockContainerSizeX, lockContainerSizeY) / 2)
+    AddCorner(LockContainer, isMobile and 32 or 28)
     
     local LockIcon = Create("ImageLabel", {
         Name = "LockIcon",
         BackgroundTransparency = 1,
         Image = GetIcon("lock"),
         ImageColor3 = Config.AccentColor,
-        Size = UDim2.new(0, lockIconSizeX, 0, lockIconSizeY),
+        Size = UDim2.new(0, isMobile and 28 or 24, 0, isMobile and 28 or 24),
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
         ScaleType = Enum.ScaleType.Fit,
         Parent = LockContainer
     })
-    
-    -- Calculate positions based on lock container size
-    local descPosY = lockContainerSizeY + 12
     
     -- Description
     local DescLabel = Create("TextLabel", {
@@ -435,18 +397,16 @@ function KeySystem:Create(options)
         TextSize = isMobile and 13 or 12,
         TextWrapped = true,
         Size = UDim2.new(1, 0, 0, 40),
-        Position = UDim2.new(0, 0, 0, descPosY),
+        Position = UDim2.new(0, 0, 0, isMobile and 76 or 68),
         Parent = Content
     })
     
     -- Input Container
-    local inputPosY = descPosY + 50
-    
     local InputContainer = Create("Frame", {
         Name = "InputContainer",
         BackgroundColor3 = Config.SecondaryColor,
         Size = UDim2.new(1, 0, 0, isMobile and 48 or 44),
-        Position = UDim2.new(0, 0, 0, inputPosY),
+        Position = UDim2.new(0, 0, 0, isMobile and 128 or 118),
         Parent = Content
     })
     AddCorner(InputContainer, 8)
@@ -490,8 +450,6 @@ function KeySystem:Create(options)
     end)
     
     -- Status Label
-    local statusPosY = inputPosY + (isMobile and 54 or 50)
-    
     local StatusLabel = Create("TextLabel", {
         Name = "Status",
         BackgroundTransparency = 1,
@@ -500,7 +458,7 @@ function KeySystem:Create(options)
         FontFace = Fonts.Regular,
         TextSize = isMobile and 11 or 10,
         Size = UDim2.new(1, 0, 0, 16),
-        Position = UDim2.new(0, 0, 0, statusPosY),
+        Position = UDim2.new(0, 0, 0, isMobile and 182 or 168),
         Parent = Content
     })
     
@@ -640,6 +598,7 @@ function KeySystem:Create(options)
             StatusLabel.Text = "Please enter a key!"
             StatusLabel.TextColor3 = Config.WarningColor
             
+            -- Shake animation for empty input
             local originalPos = InputContainer.Position
             for i = 1, 4 do
                 Tween(InputContainer, {Position = originalPos + UDim2.new(0, i % 2 == 0 and 6 or -6, 0, 0)}, 0.04)
@@ -658,6 +617,7 @@ function KeySystem:Create(options)
         end
         
         if valid then
+            -- Success animation
             StatusLabel.Text = "Key verified successfully!"
             StatusLabel.TextColor3 = Config.SuccessColor
             LockIcon.Image = GetIcon("unlock")
@@ -681,6 +641,7 @@ function KeySystem:Create(options)
             StatusLabel.Text = string.format("Invalid key! (%d/%d attempts)", attempts, maxAttempts)
             StatusLabel.TextColor3 = Config.ErrorColor
             
+            -- Error flash
             Tween(InputContainer, {BackgroundColor3 = Color3.fromRGB(60, 30, 30)}, 0.1)
             Tween(KeyIcon, {ImageColor3 = Config.ErrorColor}, 0.1)
             task.delay(0.3, function()
@@ -690,6 +651,7 @@ function KeySystem:Create(options)
                 end
             end)
             
+            -- Shake animation
             local originalPos = InputContainer.Position
             for i = 1, 6 do
                 Tween(InputContainer, {Position = originalPos + UDim2.new(0, i % 2 == 0 and 8 or -8, 0, 0)}, 0.04)
@@ -740,6 +702,7 @@ function KeySystem:Create(options)
         end
     end)
     
+    -- Make draggable
     MakeDraggable(MainFrame, TitleBar)
     
     -- Entrance animation
@@ -759,27 +722,11 @@ function KeySystem:Create(options)
             StatusLabel.Text = text
             StatusLabel.TextColor3 = color or Config.SecondaryTextColor
         end,
-        SetIcon = function(newIcon, newSize)
+        SetIcon = function(newIcon)
             IconLabel.Image = GetIcon(newIcon)
-            if newSize then
-                local sizeX, sizeY = ParseIconSize(newSize, titleIconDefaultSize)
-                IconLabel.Size = UDim2.new(0, sizeX, 0, sizeY)
-            end
         end,
-        SetLockIcon = function(newIcon, newSize)
+        SetLockIcon = function(newIcon)
             LockIcon.Image = GetIcon(newIcon)
-            if newSize then
-                local sizeX, sizeY = ParseIconSize(newSize, lockIconDefaultSize)
-                LockIcon.Size = UDim2.new(0, sizeX, 0, sizeY)
-            end
-        end,
-        SetIconSize = function(newSize)
-            local sizeX, sizeY = ParseIconSize(newSize, titleIconDefaultSize)
-            IconLabel.Size = UDim2.new(0, sizeX, 0, sizeY)
-        end,
-        SetLockIconSize = function(newSize)
-            local sizeX, sizeY = ParseIconSize(newSize, lockIconDefaultSize)
-            LockIcon.Size = UDim2.new(0, sizeX, 0, sizeY)
         end
     }
 end
