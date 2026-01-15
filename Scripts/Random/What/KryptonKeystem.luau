@@ -45,11 +45,46 @@ local function LoadIcons()
 end
 LoadIcons()
 
+local function IsAssetId(str)
+    if not str then return false end
+    str = tostring(str)
+    -- Check for rbxassetid:// format
+    if string.match(str, "^rbxassetid://") then
+        return true
+    end
+    -- Check for rbxasset:// format
+    if string.match(str, "^rbxasset://") then
+        return true
+    end
+    -- Check for http/https URLs
+    if string.match(str, "^https?://") then
+        return true
+    end
+    -- Check if it's just a number (asset ID)
+    if tonumber(str) then
+        return true
+    end
+    return false
+end
+
 local function GetIcon(name)
     if not name then return "" end
-    local lower = string.lower(tostring(name))
+    
+    local str = tostring(name)
+    
+    -- If it's already an asset ID or URL, return it directly
+    if IsAssetId(str) then
+        -- If it's just a number, convert to rbxassetid format
+        if tonumber(str) then
+            return "rbxassetid://" .. str
+        end
+        return str
+    end
+    
+    -- Otherwise, look up in the icons table
+    local lower = string.lower(str)
     if Icons[lower] then return Icons[lower] end
-    if Icons[name] then return Icons[name] end
+    if Icons[str] then return Icons[str] end
     return Icons["circle"] or ""
 end
 
@@ -159,6 +194,14 @@ function KeySystem:Create(options)
     local maxAttempts = options.MaxAttempts or 5
     local lockoutTime = options.LockoutTime or 60
     
+    -- Custom colors (optional)
+    if options.MainColor then Config.MainColor = options.MainColor end
+    if options.SecondaryColor then Config.SecondaryColor = options.SecondaryColor end
+    if options.AccentColor then Config.AccentColor = options.AccentColor end
+    if options.TextColor then Config.TextColor = options.TextColor end
+    if options.SecondaryTextColor then Config.SecondaryTextColor = options.SecondaryTextColor end
+    if options.BorderColor then Config.BorderColor = options.BorderColor end
+    
     -- Remove existing key system
     local existing = CoreGui:FindFirstChild("KeySystemUI")
     if existing then existing:Destroy() end
@@ -252,6 +295,7 @@ function KeySystem:Create(options)
         Size = UDim2.new(0, isMobile and 24 or 22, 0, isMobile and 24 or 22),
         Position = UDim2.new(0, 16, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
+        ScaleType = Enum.ScaleType.Fit,
         Parent = TitleBar
     })
     
@@ -288,6 +332,7 @@ function KeySystem:Create(options)
         Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
+        ScaleType = Enum.ScaleType.Fit,
         Parent = CloseButton
     })
     
@@ -319,7 +364,7 @@ function KeySystem:Create(options)
         Parent = MainFrame
     })
     
-    -- Lock Icon
+    -- Lock Icon Container
     local LockContainer = Create("Frame", {
         Name = "LockContainer",
         BackgroundColor3 = Config.SecondaryColor,
@@ -338,6 +383,7 @@ function KeySystem:Create(options)
         Size = UDim2.new(0, isMobile and 28 or 24, 0, isMobile and 28 or 24),
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
+        ScaleType = Enum.ScaleType.Fit,
         Parent = LockContainer
     })
     
@@ -365,6 +411,18 @@ function KeySystem:Create(options)
     })
     AddCorner(InputContainer, 8)
     
+    local KeyIcon = Create("ImageLabel", {
+        Name = "KeyIcon",
+        BackgroundTransparency = 1,
+        Image = GetIcon("key"),
+        ImageColor3 = Config.SecondaryTextColor,
+        Size = UDim2.new(0, isMobile and 18 or 16, 0, isMobile and 18 or 16),
+        Position = UDim2.new(0, 12, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        ScaleType = Enum.ScaleType.Fit,
+        Parent = InputContainer
+    })
+    
     local KeyInput = Create("TextBox", {
         Name = "KeyInput",
         BackgroundTransparency = 1,
@@ -376,17 +434,19 @@ function KeySystem:Create(options)
         TextSize = isMobile and 13 or 12,
         TextXAlignment = Enum.TextXAlignment.Left,
         ClearTextOnFocus = false,
-        Size = UDim2.new(1, -24, 1, 0),
-        Position = UDim2.new(0, 12, 0, 0),
+        Size = UDim2.new(1, -48, 1, 0),
+        Position = UDim2.new(0, isMobile and 38 or 34, 0, 0),
         Parent = InputContainer
     })
     
     KeyInput.Focused:Connect(function()
         Tween(InputContainer, {BackgroundColor3 = Config.BorderColor})
+        Tween(KeyIcon, {ImageColor3 = Config.AccentColor})
     end)
     
     KeyInput.FocusLost:Connect(function()
         Tween(InputContainer, {BackgroundColor3 = Config.SecondaryColor})
+        Tween(KeyIcon, {ImageColor3 = Config.SecondaryTextColor})
     end)
     
     -- Status Label
@@ -425,6 +485,7 @@ function KeySystem:Create(options)
         Size = UDim2.new(0, isMobile and 140 or 130, 1, 0),
         Text = "",
         AutoButtonColor = false,
+        ClipsDescendants = true,
         Parent = ButtonsContainer
     })
     AddCorner(GetKeyButton, 8)
@@ -436,6 +497,7 @@ function KeySystem:Create(options)
         Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
         Position = UDim2.new(0, 14, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
+        ScaleType = Enum.ScaleType.Fit,
         Parent = GetKeyButton
     })
     
@@ -465,7 +527,15 @@ function KeySystem:Create(options)
                 setclipboard(keyLink)
                 StatusLabel.Text = "Link copied to clipboard!"
                 StatusLabel.TextColor3 = Config.SuccessColor
+                task.delay(2, function()
+                    if StatusLabel and StatusLabel.Parent then
+                        StatusLabel.Text = ""
+                    end
+                end)
             end
+        else
+            StatusLabel.Text = "No key link provided!"
+            StatusLabel.TextColor3 = Config.WarningColor
         end
     end)
     
@@ -476,6 +546,7 @@ function KeySystem:Create(options)
         Size = UDim2.new(0, isMobile and 140 or 130, 1, 0),
         Text = "",
         AutoButtonColor = false,
+        ClipsDescendants = true,
         Parent = ButtonsContainer
     })
     AddCorner(VerifyButton, 8)
@@ -487,6 +558,7 @@ function KeySystem:Create(options)
         Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
         Position = UDim2.new(0, 14, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
+        ScaleType = Enum.ScaleType.Fit,
         Parent = VerifyButton
     })
     
@@ -525,6 +597,14 @@ function KeySystem:Create(options)
         if inputKey == "" then
             StatusLabel.Text = "Please enter a key!"
             StatusLabel.TextColor3 = Config.WarningColor
+            
+            -- Shake animation for empty input
+            local originalPos = InputContainer.Position
+            for i = 1, 4 do
+                Tween(InputContainer, {Position = originalPos + UDim2.new(0, i % 2 == 0 and 6 or -6, 0, 0)}, 0.04)
+                task.wait(0.04)
+            end
+            Tween(InputContainer, {Position = originalPos}, 0.04)
             return
         end
         
@@ -543,13 +623,15 @@ function KeySystem:Create(options)
             LockIcon.Image = GetIcon("unlock")
             Tween(LockIcon, {ImageColor3 = Config.SuccessColor})
             Tween(LockContainer, {BackgroundColor3 = Color3.fromRGB(30, 60, 30)})
+            Tween(KeyIcon, {ImageColor3 = Config.SuccessColor})
+            Tween(InputContainer, {BackgroundColor3 = Color3.fromRGB(30, 60, 30)})
             
             SaveKey(inputKey)
             
-            task.delay(1, function()
-                Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
-                Tween(Background, {BackgroundTransparency = 1}, 0.2)
-                task.delay(0.2, function()
+            task.delay(1.2, function()
+                Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.25)
+                Tween(Background, {BackgroundTransparency = 1}, 0.25)
+                task.delay(0.25, function()
                     ScreenGui:Destroy()
                     task.spawn(onSuccess)
                 end)
@@ -559,19 +641,31 @@ function KeySystem:Create(options)
             StatusLabel.Text = string.format("Invalid key! (%d/%d attempts)", attempts, maxAttempts)
             StatusLabel.TextColor3 = Config.ErrorColor
             
+            -- Error flash
+            Tween(InputContainer, {BackgroundColor3 = Color3.fromRGB(60, 30, 30)}, 0.1)
+            Tween(KeyIcon, {ImageColor3 = Config.ErrorColor}, 0.1)
+            task.delay(0.3, function()
+                if not lockedOut then
+                    Tween(InputContainer, {BackgroundColor3 = Config.SecondaryColor}, 0.2)
+                    Tween(KeyIcon, {ImageColor3 = Config.SecondaryTextColor}, 0.2)
+                end
+            end)
+            
             -- Shake animation
             local originalPos = InputContainer.Position
-            for i = 1, 4 do
-                Tween(InputContainer, {Position = originalPos + UDim2.new(0, i % 2 == 0 and 8 or -8, 0, 0)}, 0.05)
-                task.wait(0.05)
+            for i = 1, 6 do
+                Tween(InputContainer, {Position = originalPos + UDim2.new(0, i % 2 == 0 and 8 or -8, 0, 0)}, 0.04)
+                task.wait(0.04)
             end
-            Tween(InputContainer, {Position = originalPos}, 0.05)
+            Tween(InputContainer, {Position = originalPos}, 0.04)
             
             if attempts >= maxAttempts then
                 lockedOut = true
                 StatusLabel.Text = string.format("Locked out! Wait %d seconds...", lockoutTime)
                 Tween(VerifyButton, {BackgroundColor3 = Config.BorderColor})
+                Tween(VerifyIcon, {ImageColor3 = Config.SecondaryTextColor})
                 VerifyLabel.TextColor3 = Config.SecondaryTextColor
+                Tween(LockIcon, {ImageColor3 = Config.ErrorColor})
                 
                 task.spawn(function()
                     for i = lockoutTime, 1, -1 do
@@ -582,9 +676,16 @@ function KeySystem:Create(options)
                     lockedOut = false
                     attempts = 0
                     StatusLabel.Text = "You can try again now"
-                    StatusLabel.TextColor3 = Config.SecondaryTextColor
+                    StatusLabel.TextColor3 = Config.SuccessColor
                     Tween(VerifyButton, {BackgroundColor3 = Config.AccentColor})
+                    Tween(VerifyIcon, {ImageColor3 = Config.MainColor})
                     VerifyLabel.TextColor3 = Config.MainColor
+                    Tween(LockIcon, {ImageColor3 = Config.AccentColor})
+                    task.delay(2, function()
+                        if StatusLabel and StatusLabel.Parent and StatusLabel.Text == "You can try again now" then
+                            StatusLabel.Text = ""
+                        end
+                    end)
                 end)
             end
         end
@@ -613,11 +714,19 @@ function KeySystem:Create(options)
     
     return {
         Destroy = function()
-            ScreenGui:Destroy()
+            if ScreenGui and ScreenGui.Parent then
+                ScreenGui:Destroy()
+            end
         end,
         SetStatus = function(text, color)
             StatusLabel.Text = text
             StatusLabel.TextColor3 = color or Config.SecondaryTextColor
+        end,
+        SetIcon = function(newIcon)
+            IconLabel.Image = GetIcon(newIcon)
+        end,
+        SetLockIcon = function(newIcon)
+            LockIcon.Image = GetIcon(newIcon)
         end
     }
 end
