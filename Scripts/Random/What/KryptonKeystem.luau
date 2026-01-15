@@ -303,9 +303,8 @@ local function AddRipple(btn)
     end)
 end
 
-local function JoinDiscord(code)
+local function JoinDiscordRPC(code)
     if not code or code == "" then return false end
-    
     local success = pcall(function()
         request({
             Url = "http://127.0.0.1:6463/rpc?v=1",
@@ -321,7 +320,6 @@ local function JoinDiscord(code)
             })
         })
     end)
-    
     return success
 end
 
@@ -399,14 +397,20 @@ function KeySystem:Create(options)
     local btnH = isMobile and 38 or 34
     local iconS = isMobile and 16 or 14
     
-    local hasDiscord = discordCode ~= ""
-    local hasGetKey = keyLink ~= ""
-    local btnCount = 1 + (hasDiscord and 1 or 0) + (hasGetKey and 1 or 0)
+    local showDiscord = discordCode ~= nil and discordCode ~= ""
+    local showGetKey = keyLink ~= nil and keyLink ~= ""
+    local btnCount = 1
+    if showDiscord then btnCount = btnCount + 1 end
+    if showGetKey then btnCount = btnCount + 1 end
     
     local btnW
-    if btnCount == 1 then btnW = isMobile and 180 or 160
-    elseif btnCount == 2 then btnW = isMobile and 140 or 130
-    else btnW = isMobile and 100 or 92 end
+    if btnCount == 1 then 
+        btnW = isMobile and 180 or 160
+    elseif btnCount == 2 then 
+        btnW = isMobile and 140 or 130
+    else 
+        btnW = isMobile and 100 or 92 
+    end
     
     local ScreenGui = Create("ScreenGui", {
         Name = "KeySystemUI",
@@ -628,14 +632,20 @@ function KeySystem:Create(options)
         Parent = Content
     })
     
-    local totalWidth = btnW * btnCount + 8 * (btnCount - 1)
+    local totalBtnWidth = (btnW * btnCount) + (8 * (btnCount - 1))
+    local containerWidth = frameW - 32
+    local startX = (containerWidth - totalBtnWidth) / 2
     
-    local function CreateBtn(name, bgColor, iconName, iconColor, labelText, labelColor, order)
-        local xPos = (frameW - 32 - totalWidth) / 2 + order * (btnW + 8)
+    local currentOrder = 0
+    
+    -- Discord Button
+    if showDiscord then
+        local discordFullLink = "discord.gg/" .. discordCode
+        local xPos = startX + (currentOrder * (btnW + 8))
         
-        local btn = Create("TextButton", {
-            Name = name,
-            BackgroundColor3 = bgColor,
+        local DiscordBtn = Create("TextButton", {
+            Name = "Discord",
+            BackgroundColor3 = Config.DiscordColor,
             Size = UDim2.new(0, btnW, 0, btnH),
             Position = UDim2.new(0, xPos, 0.5, 0),
             AnchorPoint = Vector2.new(0, 0.5),
@@ -644,39 +654,30 @@ function KeySystem:Create(options)
             ClipsDescendants = true,
             Parent = ButtonsContainer
         })
-        AddCorner(btn, 8)
+        AddCorner(DiscordBtn, 8)
         
         Create("ImageLabel", {
             Name = "Icon",
             BackgroundTransparency = 1,
-            Image = GetIcon(iconName),
-            ImageColor3 = iconColor,
+            Image = GetIcon("message-circle"),
+            ImageColor3 = Color3.fromRGB(255, 255, 255),
             Size = UDim2.new(0, iconS, 0, iconS),
             Position = UDim2.new(0, 10, 0.5, 0),
             AnchorPoint = Vector2.new(0, 0.5),
-            Parent = btn
+            Parent = DiscordBtn
         })
         
         Create("TextLabel", {
             Name = "Label",
             BackgroundTransparency = 1,
-            Text = labelText,
-            TextColor3 = labelColor,
+            Text = btnCount >= 3 and "Discord" or "Join Discord",
+            TextColor3 = Color3.fromRGB(255, 255, 255),
             FontFace = Fonts.Medium,
             TextSize = isMobile and 12 or 11,
             Size = UDim2.new(1, -28, 1, 0),
             Position = UDim2.new(0, 26, 0, 0),
-            Parent = btn
+            Parent = DiscordBtn
         })
-        
-        return btn
-    end
-    
-    local order = 0
-    
-    if hasDiscord then
-        local DiscordBtn = CreateBtn("Discord", Config.DiscordColor, "message-circle", Color3.new(1,1,1), btnCount >= 3 and "Discord" or "Join Discord", Color3.new(1,1,1), order)
-        order = order + 1
         
         DiscordBtn.MouseEnter:Connect(function()
             Tween(DiscordBtn, {BackgroundColor3 = Color3.fromRGB(108, 121, 255)})
@@ -686,20 +687,70 @@ function KeySystem:Create(options)
         end)
         DiscordBtn.MouseButton1Click:Connect(function()
             AddRipple(DiscordBtn)
-            local success = JoinDiscord(discordCode)
-            if success then
-                StatusLabel.Text = "Opening Discord invite..."
-                StatusLabel.TextColor3 = Config.DiscordColor
+            
+            -- Always copy to clipboard
+            if setclipboard then
+                setclipboard(discordFullLink)
+            end
+            
+            -- Try RPC if not mobile
+            if not isMobile then
+                local rpcSuccess = JoinDiscordRPC(discordCode)
+                if rpcSuccess then
+                    StatusLabel.Text = "Opening Discord... (Link copied!)"
+                    StatusLabel.TextColor3 = Config.DiscordColor
+                else
+                    StatusLabel.Text = "Link copied! Open Discord manually."
+                    StatusLabel.TextColor3 = Config.SuccessColor
+                end
             else
-                StatusLabel.Text = "Failed to open Discord. Make sure Discord is running."
-                StatusLabel.TextColor3 = Config.ErrorColor
+                StatusLabel.Text = "Discord link copied!"
+                StatusLabel.TextColor3 = Config.SuccessColor
             end
         end)
+        
+        currentOrder = currentOrder + 1
     end
     
-    if hasGetKey then
-        local GetKeyBtn = CreateBtn("GetKey", Config.SecondaryColor, "external-link", Config.TextColor, "Get Key", Config.TextColor, order)
-        order = order + 1
+    -- Get Key Button
+    if showGetKey then
+        local xPos = startX + (currentOrder * (btnW + 8))
+        
+        local GetKeyBtn = Create("TextButton", {
+            Name = "GetKey",
+            BackgroundColor3 = Config.SecondaryColor,
+            Size = UDim2.new(0, btnW, 0, btnH),
+            Position = UDim2.new(0, xPos, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            Text = "",
+            AutoButtonColor = false,
+            ClipsDescendants = true,
+            Parent = ButtonsContainer
+        })
+        AddCorner(GetKeyBtn, 8)
+        
+        Create("ImageLabel", {
+            Name = "Icon",
+            BackgroundTransparency = 1,
+            Image = GetIcon("external-link"),
+            ImageColor3 = Config.TextColor,
+            Size = UDim2.new(0, iconS, 0, iconS),
+            Position = UDim2.new(0, 10, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            Parent = GetKeyBtn
+        })
+        
+        Create("TextLabel", {
+            Name = "Label",
+            BackgroundTransparency = 1,
+            Text = "Get Key",
+            TextColor3 = Config.TextColor,
+            FontFace = Fonts.Medium,
+            TextSize = isMobile and 12 or 11,
+            Size = UDim2.new(1, -28, 1, 0),
+            Position = UDim2.new(0, 26, 0, 0),
+            Parent = GetKeyBtn
+        })
         
         GetKeyBtn.MouseEnter:Connect(function()
             Tween(GetKeyBtn, {BackgroundColor3 = Config.BorderColor})
@@ -715,9 +766,48 @@ function KeySystem:Create(options)
                 StatusLabel.TextColor3 = Config.SuccessColor
             end
         end)
+        
+        currentOrder = currentOrder + 1
     end
     
-    local VerifyBtn = CreateBtn("Verify", Config.AccentColor, "check", Config.MainColor, "Verify", Config.MainColor, order)
+    -- Verify Button
+    local xPos = startX + (currentOrder * (btnW + 8))
+    
+    local VerifyBtn = Create("TextButton", {
+        Name = "Verify",
+        BackgroundColor3 = Config.AccentColor,
+        Size = UDim2.new(0, btnW, 0, btnH),
+        Position = UDim2.new(0, xPos, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        Text = "",
+        AutoButtonColor = false,
+        ClipsDescendants = true,
+        Parent = ButtonsContainer
+    })
+    AddCorner(VerifyBtn, 8)
+    
+    Create("ImageLabel", {
+        Name = "Icon",
+        BackgroundTransparency = 1,
+        Image = GetIcon("check"),
+        ImageColor3 = Config.MainColor,
+        Size = UDim2.new(0, iconS, 0, iconS),
+        Position = UDim2.new(0, 10, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        Parent = VerifyBtn
+    })
+    
+    Create("TextLabel", {
+        Name = "Label",
+        BackgroundTransparency = 1,
+        Text = "Verify",
+        TextColor3 = Config.MainColor,
+        FontFace = Fonts.Medium,
+        TextSize = isMobile and 12 or 11,
+        Size = UDim2.new(1, -28, 1, 0),
+        Position = UDim2.new(0, 26, 0, 0),
+        Parent = VerifyBtn
+    })
     
     VerifyBtn.MouseEnter:Connect(function()
         Tween(VerifyBtn, {BackgroundColor3 = Config.TextColor})
