@@ -10,19 +10,194 @@ KeySystem.__index = KeySystem
 
 local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled
 
-local Config = {
-    MainColor = Color3.fromRGB(0, 0, 0),
-    SecondaryColor = Color3.fromRGB(10, 10, 10),
-    AccentColor = Color3.fromRGB(255, 255, 255),
-    TextColor = Color3.fromRGB(255, 255, 255),
-    SecondaryTextColor = Color3.fromRGB(160, 160, 160),
-    BorderColor = Color3.fromRGB(40, 40, 40),
-    SuccessColor = Color3.fromRGB(74, 222, 128),
-    ErrorColor = Color3.fromRGB(248, 113, 113),
-    WarningColor = Color3.fromRGB(251, 191, 36),
-    DiscordColor = Color3.fromRGB(88, 101, 242),
-    TweenSpeed = 0.15
+local Themes = {
+    Default = {
+        MainColor = Color3.fromRGB(0, 0, 0),
+        SecondaryColor = Color3.fromRGB(10, 10, 10),
+        AccentColor = Color3.fromRGB(255, 255, 255),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(160, 160, 160),
+        BorderColor = Color3.fromRGB(40, 40, 40),
+        SuccessColor = Color3.fromRGB(74, 222, 128),
+        ErrorColor = Color3.fromRGB(248, 113, 113),
+        WarningColor = Color3.fromRGB(251, 191, 36),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Dark = {
+        MainColor = Color3.fromRGB(12, 12, 12),
+        SecondaryColor = Color3.fromRGB(18, 18, 18),
+        AccentColor = Color3.fromRGB(99, 102, 241),
+        TextColor = Color3.fromRGB(250, 250, 250),
+        SecondaryTextColor = Color3.fromRGB(140, 140, 140),
+        BorderColor = Color3.fromRGB(38, 38, 38),
+        SuccessColor = Color3.fromRGB(74, 222, 128),
+        ErrorColor = Color3.fromRGB(248, 113, 113),
+        WarningColor = Color3.fromRGB(251, 191, 36),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Light = {
+        MainColor = Color3.fromRGB(255, 255, 255),
+        SecondaryColor = Color3.fromRGB(245, 245, 245),
+        AccentColor = Color3.fromRGB(0, 0, 0),
+        TextColor = Color3.fromRGB(0, 0, 0),
+        SecondaryTextColor = Color3.fromRGB(100, 100, 100),
+        BorderColor = Color3.fromRGB(220, 220, 220),
+        SuccessColor = Color3.fromRGB(34, 197, 94),
+        ErrorColor = Color3.fromRGB(239, 68, 68),
+        WarningColor = Color3.fromRGB(234, 179, 8),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Ocean = {
+        MainColor = Color3.fromRGB(15, 23, 42),
+        SecondaryColor = Color3.fromRGB(30, 41, 59),
+        AccentColor = Color3.fromRGB(56, 189, 248),
+        TextColor = Color3.fromRGB(248, 250, 252),
+        SecondaryTextColor = Color3.fromRGB(148, 163, 184),
+        BorderColor = Color3.fromRGB(51, 65, 85),
+        SuccessColor = Color3.fromRGB(74, 222, 128),
+        ErrorColor = Color3.fromRGB(248, 113, 113),
+        WarningColor = Color3.fromRGB(251, 191, 36),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Forest = {
+        MainColor = Color3.fromRGB(20, 26, 20),
+        SecondaryColor = Color3.fromRGB(28, 36, 28),
+        AccentColor = Color3.fromRGB(74, 222, 128),
+        TextColor = Color3.fromRGB(240, 253, 244),
+        SecondaryTextColor = Color3.fromRGB(134, 197, 150),
+        BorderColor = Color3.fromRGB(45, 55, 45),
+        SuccessColor = Color3.fromRGB(74, 222, 128),
+        ErrorColor = Color3.fromRGB(248, 113, 113),
+        WarningColor = Color3.fromRGB(251, 191, 36),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Sunset = {
+        MainColor = Color3.fromRGB(30, 20, 20),
+        SecondaryColor = Color3.fromRGB(42, 28, 28),
+        AccentColor = Color3.fromRGB(251, 146, 60),
+        TextColor = Color3.fromRGB(255, 247, 237),
+        SecondaryTextColor = Color3.fromRGB(194, 165, 150),
+        BorderColor = Color3.fromRGB(68, 48, 45),
+        SuccessColor = Color3.fromRGB(74, 222, 128),
+        ErrorColor = Color3.fromRGB(248, 113, 113),
+        WarningColor = Color3.fromRGB(251, 191, 36),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Purple = {
+        MainColor = Color3.fromRGB(18, 14, 28),
+        SecondaryColor = Color3.fromRGB(28, 22, 42),
+        AccentColor = Color3.fromRGB(168, 85, 247),
+        TextColor = Color3.fromRGB(250, 245, 255),
+        SecondaryTextColor = Color3.fromRGB(167, 139, 200),
+        BorderColor = Color3.fromRGB(55, 45, 75),
+        SuccessColor = Color3.fromRGB(74, 222, 128),
+        ErrorColor = Color3.fromRGB(248, 113, 113),
+        WarningColor = Color3.fromRGB(251, 191, 36),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Rose = {
+        MainColor = Color3.fromRGB(28, 18, 22),
+        SecondaryColor = Color3.fromRGB(40, 26, 32),
+        AccentColor = Color3.fromRGB(244, 114, 182),
+        TextColor = Color3.fromRGB(255, 241, 245),
+        SecondaryTextColor = Color3.fromRGB(190, 150, 170),
+        BorderColor = Color3.fromRGB(65, 45, 55),
+        SuccessColor = Color3.fromRGB(74, 222, 128),
+        ErrorColor = Color3.fromRGB(248, 113, 113),
+        WarningColor = Color3.fromRGB(251, 191, 36),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Midnight = {
+        MainColor = Color3.fromRGB(3, 7, 18),
+        SecondaryColor = Color3.fromRGB(15, 23, 42),
+        AccentColor = Color3.fromRGB(129, 140, 248),
+        TextColor = Color3.fromRGB(226, 232, 240),
+        SecondaryTextColor = Color3.fromRGB(100, 116, 139),
+        BorderColor = Color3.fromRGB(30, 41, 59),
+        SuccessColor = Color3.fromRGB(74, 222, 128),
+        ErrorColor = Color3.fromRGB(248, 113, 113),
+        WarningColor = Color3.fromRGB(251, 191, 36),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Aqua = {
+        MainColor = Color3.fromRGB(15, 28, 28),
+        SecondaryColor = Color3.fromRGB(22, 40, 40),
+        AccentColor = Color3.fromRGB(45, 212, 191),
+        TextColor = Color3.fromRGB(240, 253, 250),
+        SecondaryTextColor = Color3.fromRGB(130, 180, 175),
+        BorderColor = Color3.fromRGB(40, 60, 58),
+        SuccessColor = Color3.fromRGB(74, 222, 128),
+        ErrorColor = Color3.fromRGB(248, 113, 113),
+        WarningColor = Color3.fromRGB(251, 191, 36),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Blood = {
+        MainColor = Color3.fromRGB(25, 10, 10),
+        SecondaryColor = Color3.fromRGB(38, 15, 15),
+        AccentColor = Color3.fromRGB(239, 68, 68),
+        TextColor = Color3.fromRGB(254, 242, 242),
+        SecondaryTextColor = Color3.fromRGB(180, 130, 130),
+        BorderColor = Color3.fromRGB(60, 30, 30),
+        SuccessColor = Color3.fromRGB(74, 222, 128),
+        ErrorColor = Color3.fromRGB(248, 113, 113),
+        WarningColor = Color3.fromRGB(251, 191, 36),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Gold = {
+        MainColor = Color3.fromRGB(28, 25, 15),
+        SecondaryColor = Color3.fromRGB(40, 36, 22),
+        AccentColor = Color3.fromRGB(250, 204, 21),
+        TextColor = Color3.fromRGB(254, 252, 232),
+        SecondaryTextColor = Color3.fromRGB(180, 170, 130),
+        BorderColor = Color3.fromRGB(65, 58, 35),
+        SuccessColor = Color3.fromRGB(74, 222, 128),
+        ErrorColor = Color3.fromRGB(248, 113, 113),
+        WarningColor = Color3.fromRGB(251, 191, 36),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Neon = {
+        MainColor = Color3.fromRGB(10, 10, 15),
+        SecondaryColor = Color3.fromRGB(15, 15, 22),
+        AccentColor = Color3.fromRGB(0, 255, 135),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(150, 150, 160),
+        BorderColor = Color3.fromRGB(35, 35, 45),
+        SuccessColor = Color3.fromRGB(0, 255, 135),
+        ErrorColor = Color3.fromRGB(255, 50, 100),
+        WarningColor = Color3.fromRGB(255, 200, 0),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Cherry = {
+        MainColor = Color3.fromRGB(30, 15, 20),
+        SecondaryColor = Color3.fromRGB(45, 22, 30),
+        AccentColor = Color3.fromRGB(255, 100, 130),
+        TextColor = Color3.fromRGB(255, 240, 245),
+        SecondaryTextColor = Color3.fromRGB(180, 140, 155),
+        BorderColor = Color3.fromRGB(70, 40, 50),
+        SuccessColor = Color3.fromRGB(74, 222, 128),
+        ErrorColor = Color3.fromRGB(248, 113, 113),
+        WarningColor = Color3.fromRGB(251, 191, 36),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    },
+    Cyber = {
+        MainColor = Color3.fromRGB(8, 8, 12),
+        SecondaryColor = Color3.fromRGB(14, 14, 20),
+        AccentColor = Color3.fromRGB(0, 200, 255),
+        TextColor = Color3.fromRGB(230, 245, 255),
+        SecondaryTextColor = Color3.fromRGB(100, 140, 160),
+        BorderColor = Color3.fromRGB(30, 40, 50),
+        SuccessColor = Color3.fromRGB(0, 255, 180),
+        ErrorColor = Color3.fromRGB(255, 60, 100),
+        WarningColor = Color3.fromRGB(255, 180, 0),
+        DiscordColor = Color3.fromRGB(88, 101, 242)
+    }
 }
+
+local Config = {}
+for key, value in pairs(Themes.Default) do
+    Config[key] = value
+end
+Config.TweenSpeed = 0.15
 
 local Fonts = {
     Regular = Font.new("rbxassetid://12187365364", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
@@ -61,7 +236,6 @@ local function GetIcon(name)
     
     local str = tostring(name)
     
-    -- Check if it's an asset ID or URL
     if IsAssetId(str) then
         if tonumber(str) then
             return "rbxassetid://" .. str
@@ -69,7 +243,6 @@ local function GetIcon(name)
         return str
     end
     
-    -- Look up in lucide icons
     local lower = string.lower(str)
     if Icons[lower] then return Icons[lower] end
     if Icons[str] then return Icons[str] end
@@ -190,6 +363,15 @@ local function ParseIconSize(size, default)
     return default, default
 end
 
+function KeySystem:GetThemes()
+    local themeList = {}
+    for name in pairs(Themes) do
+        table.insert(themeList, name)
+    end
+    table.sort(themeList)
+    return themeList
+end
+
 function KeySystem:Create(options)
     options = options or {}
     
@@ -205,19 +387,16 @@ function KeySystem:Create(options)
     local savePath = options.SavePath or "KeyData.json"
     local onSuccess = options.OnSuccess or function() end
     local onFailed = options.OnFailed or function() end
-    local maxAttempts = options.MaxAttempts or 5
-    local lockoutTime = options.LockoutTime or 60
+    local theme = options.Theme or "Default"
     
-    -- Parse icon sizes
-    local titleIconDefault = isMobile and 24 or 22
-    local centerIconDefault = isMobile and 28 or 24
+    -- Apply theme
+    if Themes[theme] then
+        for key, value in pairs(Themes[theme]) do
+            Config[key] = value
+        end
+    end
     
-    local titleIconSizeX, titleIconSizeY = ParseIconSize(iconSize, titleIconDefault)
-    local centerIconSizeX, centerIconSizeY = ParseIconSize(centerIconSize, centerIconDefault)
-    
-    local centerContainerSize = math.max(centerIconSizeX, centerIconSizeY) + (isMobile and 36 or 32)
-    
-    -- Custom colors
+    -- Custom color overrides
     if options.MainColor then Config.MainColor = options.MainColor end
     if options.SecondaryColor then Config.SecondaryColor = options.SecondaryColor end
     if options.AccentColor then Config.AccentColor = options.AccentColor end
@@ -226,15 +405,19 @@ function KeySystem:Create(options)
     if options.BorderColor then Config.BorderColor = options.BorderColor end
     if options.DiscordColor then Config.DiscordColor = options.DiscordColor end
     
-    -- Remove existing
+    local titleIconDefault = isMobile and 24 or 22
+    local centerIconDefault = isMobile and 28 or 24
+    
+    local titleIconSizeX, titleIconSizeY = ParseIconSize(iconSize, titleIconDefault)
+    local centerIconSizeX, centerIconSizeY = ParseIconSize(centerIconSize, centerIconDefault)
+    
+    local centerContainerSize = math.max(centerIconSizeX, centerIconSizeY) + (isMobile and 36 or 32)
+    
     local existing = CoreGui:FindFirstChild("KeySystemUI")
     if existing then existing:Destroy() end
     
-    local attempts = 0
-    local lockedOut = false
-    
     local function CheckSavedKey()
-        if not isfile then return nil end
+        if not isfile then return false end
         local success, data = pcall(function()
             if isfile(savePath) then
                 return HttpService:JSONDecode(readfile(savePath))
@@ -259,23 +442,33 @@ function KeySystem:Create(options)
     
     if CheckSavedKey() then
         task.spawn(onSuccess)
-        return
+        return {
+            Destroy = function() end,
+            SetStatus = function() end,
+            SetIcon = function() end,
+            SetCenterIcon = function() end,
+            SetIconSize = function() end,
+            SetCenterIconSize = function() end,
+            SetTheme = function() end
+        }
     end
     
-    -- Determine button count for sizing
-    local buttonCount = 1 -- Verify is always present
+    -- Count buttons
+    local buttonCount = 1
     if keyLink ~= "" then buttonCount = buttonCount + 1 end
     if discordLink ~= "" then buttonCount = buttonCount + 1 end
     
-    local buttonWidth = isMobile and 100 or 95
-    if buttonCount == 2 then
-        buttonWidth = isMobile and 140 or 130
-    elseif buttonCount == 1 then
-        buttonWidth = isMobile and 200 or 180
+    local buttonWidth
+    if buttonCount == 1 then
+        buttonWidth = isMobile and 180 or 160
+    elseif buttonCount == 2 then
+        buttonWidth = isMobile and 135 or 125
+    else
+        buttonWidth = isMobile and 95 or 88
     end
     
-    -- Adjust frame height based on content
-    local frameHeight = isMobile and 340 or 360
+    local frameWidth = isMobile and 360 or 420
+    local frameHeight = isMobile and 320 or 340
     
     local ScreenGui = Create("ScreenGui", {
         Name = "KeySystemUI",
@@ -296,7 +489,7 @@ function KeySystem:Create(options)
     local MainFrame = Create("Frame", {
         Name = "MainFrame",
         BackgroundColor3 = Config.MainColor,
-        Size = isMobile and UDim2.new(0, 360, 0, frameHeight) or UDim2.new(0, 420, 0, frameHeight),
+        Size = UDim2.new(0, frameWidth, 0, frameHeight),
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
         ClipsDescendants = true,
@@ -314,7 +507,7 @@ function KeySystem:Create(options)
         Parent = MainFrame
     })
     
-    Create("Frame", {
+    local Divider = Create("Frame", {
         Name = "Divider",
         BackgroundColor3 = Config.BorderColor,
         Size = UDim2.new(1, 0, 0, 1),
@@ -337,7 +530,7 @@ function KeySystem:Create(options)
     
     local titlePosX = 16 + titleIconSizeX + 10
     
-    Create("TextLabel", {
+    local TitleLabel = Create("TextLabel", {
         Name = "Title",
         BackgroundTransparency = 1,
         Text = title,
@@ -428,7 +621,7 @@ function KeySystem:Create(options)
     local descPosY = centerContainerSize + 12
     
     -- Description
-    Create("TextLabel", {
+    local DescLabel = Create("TextLabel", {
         Name = "Description",
         BackgroundTransparency = 1,
         Text = description,
@@ -518,43 +711,51 @@ function KeySystem:Create(options)
     Create("UIListLayout", {
         FillDirection = Enum.FillDirection.Horizontal,
         HorizontalAlignment = Enum.HorizontalAlignment.Center,
+        VerticalAlignment = Enum.VerticalAlignment.Center,
         Padding = UDim.new(0, 8),
+        SortOrder = Enum.SortOrder.LayoutOrder,
         Parent = ButtonsContainer
     })
     
-    -- Discord Button (if link provided)
-    local DiscordButton, DiscordIcon
+    local layoutOrder = 0
+    
+    -- Discord Button
     if discordLink ~= "" then
-        DiscordButton = Create("TextButton", {
+        local DiscordButton = Create("TextButton", {
             Name = "Discord",
             BackgroundColor3 = Config.DiscordColor,
-            Size = UDim2.new(0, buttonWidth, 1, 0),
+            Size = UDim2.new(0, buttonWidth, 0, isMobile and 40 or 36),
             Text = "",
             AutoButtonColor = false,
             ClipsDescendants = true,
+            LayoutOrder = layoutOrder,
             Parent = ButtonsContainer
         })
+        layoutOrder = layoutOrder + 1
         AddCorner(DiscordButton, 8)
         
-        DiscordIcon = Create("ImageLabel", {
+        Create("ImageLabel", {
+            Name = "Icon",
             BackgroundTransparency = 1,
             Image = GetIcon("message-circle"),
             ImageColor3 = Color3.fromRGB(255, 255, 255),
             Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
-            Position = UDim2.new(0, 12, 0.5, 0),
+            Position = UDim2.new(0, 10, 0.5, 0),
             AnchorPoint = Vector2.new(0, 0.5),
             ScaleType = Enum.ScaleType.Fit,
             Parent = DiscordButton
         })
         
         Create("TextLabel", {
+            Name = "Label",
             BackgroundTransparency = 1,
-            Text = buttonCount == 3 and "Discord" or "Join Discord",
+            Text = buttonCount >= 3 and "Discord" or "Join Discord",
             TextColor3 = Color3.fromRGB(255, 255, 255),
             FontFace = Fonts.Medium,
             TextSize = isMobile and 12 or 11,
-            Size = UDim2.new(1, -36, 1, 0),
-            Position = UDim2.new(0, isMobile and 34 or 32, 0, 0),
+            TextXAlignment = Enum.TextXAlignment.Center,
+            Size = UDim2.new(1, -30, 1, 0),
+            Position = UDim2.new(0, 28, 0, 0),
             Parent = DiscordButton
         })
         
@@ -570,10 +771,10 @@ function KeySystem:Create(options)
             AddRipple(DiscordButton)
             if setclipboard then
                 setclipboard(discordLink)
-                StatusLabel.Text = "Discord link copied!"
+                StatusLabel.Text = "Discord link copied to clipboard!"
                 StatusLabel.TextColor3 = Config.DiscordColor
                 task.delay(2, function()
-                    if StatusLabel and StatusLabel.Parent and StatusLabel.Text == "Discord link copied!" then
+                    if StatusLabel and StatusLabel.Parent and StatusLabel.Text == "Discord link copied to clipboard!" then
                         StatusLabel.Text = ""
                     end
                 end)
@@ -581,39 +782,43 @@ function KeySystem:Create(options)
         end)
     end
     
-    -- Get Key Button (if link provided)
-    local GetKeyButton
+    -- Get Key Button
     if keyLink ~= "" then
-        GetKeyButton = Create("TextButton", {
+        local GetKeyButton = Create("TextButton", {
             Name = "GetKey",
             BackgroundColor3 = Config.SecondaryColor,
-            Size = UDim2.new(0, buttonWidth, 1, 0),
+            Size = UDim2.new(0, buttonWidth, 0, isMobile and 40 or 36),
             Text = "",
             AutoButtonColor = false,
             ClipsDescendants = true,
+            LayoutOrder = layoutOrder,
             Parent = ButtonsContainer
         })
+        layoutOrder = layoutOrder + 1
         AddCorner(GetKeyButton, 8)
         
-        Create("ImageLabel", {
+        local GetKeyIconLabel = Create("ImageLabel", {
+            Name = "Icon",
             BackgroundTransparency = 1,
             Image = GetIcon("external-link"),
             ImageColor3 = Config.TextColor,
             Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
-            Position = UDim2.new(0, 12, 0.5, 0),
+            Position = UDim2.new(0, 10, 0.5, 0),
             AnchorPoint = Vector2.new(0, 0.5),
             ScaleType = Enum.ScaleType.Fit,
             Parent = GetKeyButton
         })
         
-        Create("TextLabel", {
+        local GetKeyLabel = Create("TextLabel", {
+            Name = "Label",
             BackgroundTransparency = 1,
-            Text = buttonCount == 3 and "Get Key" or "Get Key",
+            Text = "Get Key",
             TextColor3 = Config.TextColor,
             FontFace = Fonts.Medium,
             TextSize = isMobile and 12 or 11,
-            Size = UDim2.new(1, -36, 1, 0),
-            Position = UDim2.new(0, isMobile and 34 or 32, 0, 0),
+            TextXAlignment = Enum.TextXAlignment.Center,
+            Size = UDim2.new(1, -30, 1, 0),
+            Position = UDim2.new(0, 28, 0, 0),
             Parent = GetKeyButton
         })
         
@@ -629,10 +834,10 @@ function KeySystem:Create(options)
             AddRipple(GetKeyButton)
             if setclipboard then
                 setclipboard(keyLink)
-                StatusLabel.Text = "Key link copied!"
+                StatusLabel.Text = "Key link copied to clipboard!"
                 StatusLabel.TextColor3 = Config.SuccessColor
                 task.delay(2, function()
-                    if StatusLabel and StatusLabel.Parent and StatusLabel.Text == "Key link copied!" then
+                    if StatusLabel and StatusLabel.Parent and StatusLabel.Text == "Key link copied to clipboard!" then
                         StatusLabel.Text = ""
                     end
                 end)
@@ -644,55 +849,49 @@ function KeySystem:Create(options)
     local VerifyButton = Create("TextButton", {
         Name = "Verify",
         BackgroundColor3 = Config.AccentColor,
-        Size = UDim2.new(0, buttonWidth, 1, 0),
+        Size = UDim2.new(0, buttonWidth, 0, isMobile and 40 or 36),
         Text = "",
         AutoButtonColor = false,
         ClipsDescendants = true,
+        LayoutOrder = layoutOrder,
         Parent = ButtonsContainer
     })
     AddCorner(VerifyButton, 8)
     
     local VerifyIcon = Create("ImageLabel", {
+        Name = "Icon",
         BackgroundTransparency = 1,
         Image = GetIcon("check"),
         ImageColor3 = Config.MainColor,
         Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
-        Position = UDim2.new(0, 12, 0.5, 0),
+        Position = UDim2.new(0, 10, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
         ScaleType = Enum.ScaleType.Fit,
         Parent = VerifyButton
     })
     
     local VerifyLabel = Create("TextLabel", {
+        Name = "Label",
         BackgroundTransparency = 1,
         Text = "Verify",
         TextColor3 = Config.MainColor,
         FontFace = Fonts.Medium,
         TextSize = isMobile and 12 or 11,
-        Size = UDim2.new(1, -36, 1, 0),
-        Position = UDim2.new(0, isMobile and 34 or 32, 0, 0),
+        TextXAlignment = Enum.TextXAlignment.Center,
+        Size = UDim2.new(1, -30, 1, 0),
+        Position = UDim2.new(0, 28, 0, 0),
         Parent = VerifyButton
     })
     
     VerifyButton.MouseEnter:Connect(function()
-        if not lockedOut then
-            Tween(VerifyButton, {BackgroundColor3 = Config.TextColor})
-        end
+        Tween(VerifyButton, {BackgroundColor3 = Config.TextColor})
     end)
     
     VerifyButton.MouseLeave:Connect(function()
-        if not lockedOut then
-            Tween(VerifyButton, {BackgroundColor3 = Config.AccentColor})
-        end
+        Tween(VerifyButton, {BackgroundColor3 = Config.AccentColor})
     end)
     
     local function VerifyKey()
-        if lockedOut then
-            StatusLabel.Text = "Too many attempts! Please wait..."
-            StatusLabel.TextColor3 = Config.ErrorColor
-            return
-        end
-        
         local inputKey = KeyInput.Text
         
         if inputKey == "" then
@@ -736,17 +935,14 @@ function KeySystem:Create(options)
                 end)
             end)
         else
-            attempts = attempts + 1
-            StatusLabel.Text = string.format("Invalid key! (%d/%d attempts)", attempts, maxAttempts)
+            StatusLabel.Text = "Invalid key! Please try again."
             StatusLabel.TextColor3 = Config.ErrorColor
             
             Tween(InputContainer, {BackgroundColor3 = Color3.fromRGB(60, 30, 30)}, 0.1)
             Tween(InputIcon, {ImageColor3 = Config.ErrorColor}, 0.1)
-            task.delay(0.3, function()
-                if not lockedOut then
-                    Tween(InputContainer, {BackgroundColor3 = Config.SecondaryColor}, 0.2)
-                    Tween(InputIcon, {ImageColor3 = Config.SecondaryTextColor}, 0.2)
-                end
+            task.delay(0.5, function()
+                Tween(InputContainer, {BackgroundColor3 = Config.SecondaryColor}, 0.2)
+                Tween(InputIcon, {ImageColor3 = Config.SecondaryTextColor}, 0.2)
             end)
             
             local originalPos = InputContainer.Position
@@ -755,36 +951,6 @@ function KeySystem:Create(options)
                 task.wait(0.04)
             end
             Tween(InputContainer, {Position = originalPos}, 0.04)
-            
-            if attempts >= maxAttempts then
-                lockedOut = true
-                StatusLabel.Text = string.format("Locked out! Wait %d seconds...", lockoutTime)
-                Tween(VerifyButton, {BackgroundColor3 = Config.BorderColor})
-                Tween(VerifyIcon, {ImageColor3 = Config.SecondaryTextColor})
-                VerifyLabel.TextColor3 = Config.SecondaryTextColor
-                Tween(CenterIcon, {ImageColor3 = Config.ErrorColor})
-                
-                task.spawn(function()
-                    for i = lockoutTime, 1, -1 do
-                        if not ScreenGui.Parent then return end
-                        StatusLabel.Text = string.format("Locked out! Wait %d seconds...", i)
-                        task.wait(1)
-                    end
-                    lockedOut = false
-                    attempts = 0
-                    StatusLabel.Text = "You can try again now"
-                    StatusLabel.TextColor3 = Config.SuccessColor
-                    Tween(VerifyButton, {BackgroundColor3 = Config.AccentColor})
-                    Tween(VerifyIcon, {ImageColor3 = Config.MainColor})
-                    VerifyLabel.TextColor3 = Config.MainColor
-                    Tween(CenterIcon, {ImageColor3 = Config.AccentColor})
-                    task.delay(2, function()
-                        if StatusLabel and StatusLabel.Parent and StatusLabel.Text == "You can try again now" then
-                            StatusLabel.Text = ""
-                        end
-                    end)
-                end)
-            end
         end
     end
     
@@ -802,11 +968,41 @@ function KeySystem:Create(options)
     MakeDraggable(MainFrame, TitleBar)
     
     -- Entrance animation
+    local targetSize = UDim2.new(0, frameWidth, 0, frameHeight)
     MainFrame.Size = UDim2.new(0, 0, 0, 0)
     Background.BackgroundTransparency = 1
     
     Tween(Background, {BackgroundTransparency = 0.3}, 0.2)
-    Tween(MainFrame, {Size = isMobile and UDim2.new(0, 360, 0, frameHeight) or UDim2.new(0, 420, 0, frameHeight)}, 0.3)
+    Tween(MainFrame, {Size = targetSize}, 0.3)
+    
+    -- Theme change function
+    local function ApplyTheme(themeName)
+        if not Themes[themeName] then return end
+        
+        for key, value in pairs(Themes[themeName]) do
+            Config[key] = value
+        end
+        
+        -- Update UI elements
+        MainFrame.BackgroundColor3 = Config.MainColor
+        TitleBar.BackgroundColor3 = Config.MainColor
+        Divider.BackgroundColor3 = Config.BorderColor
+        TitleIcon.ImageColor3 = Config.AccentColor
+        TitleLabel.TextColor3 = Config.TextColor
+        CloseButton.BackgroundColor3 = Config.SecondaryColor
+        CloseIcon.ImageColor3 = Config.SecondaryTextColor
+        CenterContainer.BackgroundColor3 = Config.SecondaryColor
+        CenterIcon.ImageColor3 = Config.AccentColor
+        DescLabel.TextColor3 = Config.SecondaryTextColor
+        InputContainer.BackgroundColor3 = Config.SecondaryColor
+        InputIcon.ImageColor3 = Config.SecondaryTextColor
+        KeyInput.TextColor3 = Config.TextColor
+        KeyInput.PlaceholderColor3 = Config.SecondaryTextColor
+        StatusLabel.TextColor3 = Config.SecondaryTextColor
+        VerifyButton.BackgroundColor3 = Config.AccentColor
+        VerifyIcon.ImageColor3 = Config.MainColor
+        VerifyLabel.TextColor3 = Config.MainColor
+    end
     
     return {
         Destroy = function()
@@ -839,6 +1035,12 @@ function KeySystem:Create(options)
         SetCenterIconSize = function(newSize)
             local sizeX, sizeY = ParseIconSize(newSize, centerIconDefault)
             CenterIcon.Size = UDim2.new(0, sizeX, 0, sizeY)
+        end,
+        SetTheme = function(themeName)
+            ApplyTheme(themeName)
+        end,
+        GetThemes = function()
+            return KeySystem:GetThemes()
         end
     }
 end
