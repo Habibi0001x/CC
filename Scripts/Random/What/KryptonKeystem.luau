@@ -363,6 +363,47 @@ local function ParseIconSize(size, default)
     return default, default
 end
 
+local function CreateButton(parent, config)
+    local button = Create("TextButton", {
+        Name = config.Name,
+        BackgroundColor3 = config.BackgroundColor,
+        Size = UDim2.new(0, config.Width, 0, config.Height),
+        Text = "",
+        AutoButtonColor = false,
+        ClipsDescendants = true,
+        LayoutOrder = config.LayoutOrder,
+        Parent = parent
+    })
+    AddCorner(button, 8)
+    
+    local icon = Create("ImageLabel", {
+        Name = "Icon",
+        BackgroundTransparency = 1,
+        Image = GetIcon(config.Icon),
+        ImageColor3 = config.IconColor,
+        Size = UDim2.new(0, config.IconSize, 0, config.IconSize),
+        Position = UDim2.new(0, 10, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        ScaleType = Enum.ScaleType.Fit,
+        Parent = button
+    })
+    
+    local label = Create("TextLabel", {
+        Name = "Label",
+        BackgroundTransparency = 1,
+        Text = config.Text,
+        TextColor3 = config.TextColor,
+        FontFace = Fonts.Medium,
+        TextSize = isMobile and 12 or 11,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        Size = UDim2.new(1, -30, 1, 0),
+        Position = UDim2.new(0, 28, 0, 0),
+        Parent = button
+    })
+    
+    return button, icon, label
+end
+
 function KeySystem:GetThemes()
     local themeList = {}
     for name in pairs(Themes) do
@@ -447,25 +488,26 @@ function KeySystem:Create(options)
             SetStatus = function() end,
             SetIcon = function() end,
             SetCenterIcon = function() end,
-            SetIconSize = function() end,
-            SetCenterIconSize = function() end,
             SetTheme = function() end
         }
     end
     
     -- Count buttons
-    local buttonCount = 1
-    if keyLink ~= "" then buttonCount = buttonCount + 1 end
-    if discordLink ~= "" then buttonCount = buttonCount + 1 end
+    local hasDiscord = discordLink ~= ""
+    local hasGetKey = keyLink ~= ""
+    local buttonCount = 1 + (hasDiscord and 1 or 0) + (hasGetKey and 1 or 0)
     
     local buttonWidth
     if buttonCount == 1 then
-        buttonWidth = isMobile and 180 or 160
+        buttonWidth = isMobile and 200 or 180
     elseif buttonCount == 2 then
-        buttonWidth = isMobile and 135 or 125
+        buttonWidth = isMobile and 145 or 135
     else
-        buttonWidth = isMobile and 95 or 88
+        buttonWidth = isMobile and 100 or 95
     end
+    
+    local buttonHeight = isMobile and 40 or 36
+    local buttonIconSize = isMobile and 16 or 14
     
     local frameWidth = isMobile and 360 or 420
     local frameHeight = isMobile and 320 or 340
@@ -703,8 +745,8 @@ function KeySystem:Create(options)
     local ButtonsContainer = Create("Frame", {
         Name = "Buttons",
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, isMobile and 44 or 40),
-        Position = UDim2.new(0, 0, 1, isMobile and -44 or -40),
+        Size = UDim2.new(1, 0, 0, buttonHeight),
+        Position = UDim2.new(0, 0, 1, -buttonHeight),
         Parent = Content
     })
     
@@ -718,28 +760,29 @@ function KeySystem:Create(options)
     })
     
     local layoutOrder = 0
+    local allButtons = {}
     
     -- Discord Button
-    if discordLink ~= "" then
+    if hasDiscord then
         local DiscordButton = Create("TextButton", {
             Name = "Discord",
             BackgroundColor3 = Config.DiscordColor,
-            Size = UDim2.new(0, buttonWidth, 0, isMobile and 40 or 36),
+            Size = UDim2.new(0, buttonWidth, 0, buttonHeight),
             Text = "",
             AutoButtonColor = false,
             ClipsDescendants = true,
             LayoutOrder = layoutOrder,
             Parent = ButtonsContainer
         })
-        layoutOrder = layoutOrder + 1
         AddCorner(DiscordButton, 8)
+        layoutOrder = layoutOrder + 1
         
         Create("ImageLabel", {
             Name = "Icon",
             BackgroundTransparency = 1,
             Image = GetIcon("message-circle"),
             ImageColor3 = Color3.fromRGB(255, 255, 255),
-            Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
+            Size = UDim2.new(0, buttonIconSize, 0, buttonIconSize),
             Position = UDim2.new(0, 10, 0.5, 0),
             AnchorPoint = Vector2.new(0, 0.5),
             ScaleType = Enum.ScaleType.Fit,
@@ -754,8 +797,8 @@ function KeySystem:Create(options)
             FontFace = Fonts.Medium,
             TextSize = isMobile and 12 or 11,
             TextXAlignment = Enum.TextXAlignment.Center,
-            Size = UDim2.new(1, -30, 1, 0),
-            Position = UDim2.new(0, 28, 0, 0),
+            Size = UDim2.new(1, -28, 1, 0),
+            Position = UDim2.new(0, 26, 0, 0),
             Parent = DiscordButton
         })
         
@@ -771,54 +814,56 @@ function KeySystem:Create(options)
             AddRipple(DiscordButton)
             if setclipboard then
                 setclipboard(discordLink)
-                StatusLabel.Text = "Discord link copied to clipboard!"
+                StatusLabel.Text = "Discord link copied!"
                 StatusLabel.TextColor3 = Config.DiscordColor
                 task.delay(2, function()
-                    if StatusLabel and StatusLabel.Parent and StatusLabel.Text == "Discord link copied to clipboard!" then
+                    if StatusLabel and StatusLabel.Parent then
                         StatusLabel.Text = ""
                     end
                 end)
             end
         end)
+        
+        table.insert(allButtons, {Button = DiscordButton, Type = "Discord"})
     end
     
     -- Get Key Button
-    if keyLink ~= "" then
+    if hasGetKey then
         local GetKeyButton = Create("TextButton", {
             Name = "GetKey",
             BackgroundColor3 = Config.SecondaryColor,
-            Size = UDim2.new(0, buttonWidth, 0, isMobile and 40 or 36),
+            Size = UDim2.new(0, buttonWidth, 0, buttonHeight),
             Text = "",
             AutoButtonColor = false,
             ClipsDescendants = true,
             LayoutOrder = layoutOrder,
             Parent = ButtonsContainer
         })
-        layoutOrder = layoutOrder + 1
         AddCorner(GetKeyButton, 8)
+        layoutOrder = layoutOrder + 1
         
-        local GetKeyIconLabel = Create("ImageLabel", {
+        local GetKeyIconEl = Create("ImageLabel", {
             Name = "Icon",
             BackgroundTransparency = 1,
             Image = GetIcon("external-link"),
             ImageColor3 = Config.TextColor,
-            Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
+            Size = UDim2.new(0, buttonIconSize, 0, buttonIconSize),
             Position = UDim2.new(0, 10, 0.5, 0),
             AnchorPoint = Vector2.new(0, 0.5),
             ScaleType = Enum.ScaleType.Fit,
             Parent = GetKeyButton
         })
         
-        local GetKeyLabel = Create("TextLabel", {
+        local GetKeyLabelEl = Create("TextLabel", {
             Name = "Label",
             BackgroundTransparency = 1,
-            Text = "Get Key",
+            Text = buttonCount >= 3 and "Get Key" or "Get Key",
             TextColor3 = Config.TextColor,
             FontFace = Fonts.Medium,
             TextSize = isMobile and 12 or 11,
             TextXAlignment = Enum.TextXAlignment.Center,
-            Size = UDim2.new(1, -30, 1, 0),
-            Position = UDim2.new(0, 28, 0, 0),
+            Size = UDim2.new(1, -28, 1, 0),
+            Position = UDim2.new(0, 26, 0, 0),
             Parent = GetKeyButton
         })
         
@@ -834,22 +879,24 @@ function KeySystem:Create(options)
             AddRipple(GetKeyButton)
             if setclipboard then
                 setclipboard(keyLink)
-                StatusLabel.Text = "Key link copied to clipboard!"
+                StatusLabel.Text = "Key link copied!"
                 StatusLabel.TextColor3 = Config.SuccessColor
                 task.delay(2, function()
-                    if StatusLabel and StatusLabel.Parent and StatusLabel.Text == "Key link copied to clipboard!" then
+                    if StatusLabel and StatusLabel.Parent then
                         StatusLabel.Text = ""
                     end
                 end)
             end
         end)
+        
+        table.insert(allButtons, {Button = GetKeyButton, Type = "GetKey", Icon = GetKeyIconEl, Label = GetKeyLabelEl})
     end
     
     -- Verify Button
     local VerifyButton = Create("TextButton", {
         Name = "Verify",
         BackgroundColor3 = Config.AccentColor,
-        Size = UDim2.new(0, buttonWidth, 0, isMobile and 40 or 36),
+        Size = UDim2.new(0, buttonWidth, 0, buttonHeight),
         Text = "",
         AutoButtonColor = false,
         ClipsDescendants = true,
@@ -863,7 +910,7 @@ function KeySystem:Create(options)
         BackgroundTransparency = 1,
         Image = GetIcon("check"),
         ImageColor3 = Config.MainColor,
-        Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
+        Size = UDim2.new(0, buttonIconSize, 0, buttonIconSize),
         Position = UDim2.new(0, 10, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
         ScaleType = Enum.ScaleType.Fit,
@@ -878,8 +925,8 @@ function KeySystem:Create(options)
         FontFace = Fonts.Medium,
         TextSize = isMobile and 12 or 11,
         TextXAlignment = Enum.TextXAlignment.Center,
-        Size = UDim2.new(1, -30, 1, 0),
-        Position = UDim2.new(0, 28, 0, 0),
+        Size = UDim2.new(1, -28, 1, 0),
+        Position = UDim2.new(0, 26, 0, 0),
         Parent = VerifyButton
     })
     
@@ -983,7 +1030,6 @@ function KeySystem:Create(options)
             Config[key] = value
         end
         
-        -- Update UI elements
         MainFrame.BackgroundColor3 = Config.MainColor
         TitleBar.BackgroundColor3 = Config.MainColor
         Divider.BackgroundColor3 = Config.BorderColor
@@ -1002,6 +1048,14 @@ function KeySystem:Create(options)
         VerifyButton.BackgroundColor3 = Config.AccentColor
         VerifyIcon.ImageColor3 = Config.MainColor
         VerifyLabel.TextColor3 = Config.MainColor
+        
+        for _, btnData in ipairs(allButtons) do
+            if btnData.Type == "GetKey" then
+                btnData.Button.BackgroundColor3 = Config.SecondaryColor
+                if btnData.Icon then btnData.Icon.ImageColor3 = Config.TextColor end
+                if btnData.Label then btnData.Label.TextColor3 = Config.TextColor end
+            end
+        end
     end
     
     return {
@@ -1027,14 +1081,6 @@ function KeySystem:Create(options)
                 local sizeX, sizeY = ParseIconSize(newSize, centerIconDefault)
                 CenterIcon.Size = UDim2.new(0, sizeX, 0, sizeY)
             end
-        end,
-        SetIconSize = function(newSize)
-            local sizeX, sizeY = ParseIconSize(newSize, titleIconDefault)
-            TitleIcon.Size = UDim2.new(0, sizeX, 0, sizeY)
-        end,
-        SetCenterIconSize = function(newSize)
-            local sizeX, sizeY = ParseIconSize(newSize, centerIconDefault)
-            CenterIcon.Size = UDim2.new(0, sizeX, 0, sizeY)
         end,
         SetTheme = function(themeName)
             ApplyTheme(themeName)
