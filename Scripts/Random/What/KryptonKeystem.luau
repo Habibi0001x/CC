@@ -303,6 +303,28 @@ local function AddRipple(btn)
     end)
 end
 
+local function JoinDiscord(code)
+    if not code or code == "" then return false end
+    
+    local success = pcall(function()
+        request({
+            Url = "http://127.0.0.1:6463/rpc?v=1",
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json",
+                ["Origin"] = "https://discord.com"
+            },
+            Body = HttpService:JSONEncode({
+                cmd = "INVITE_BROWSER",
+                args = {code = code},
+                nonce = HttpService:GenerateGUID(false)
+            })
+        })
+    end)
+    
+    return success
+end
+
 function KeySystem:GetThemes()
     local list = {}
     for name in pairs(Themes) do
@@ -321,20 +343,18 @@ function KeySystem:Create(options)
     local centerIcon = options.CenterIcon or "lock"
     local keys = options.Keys or {}
     local keyLink = options.KeyLink or ""
-    local discordLink = options.DiscordLink or ""
+    local discordCode = options.DiscordCode or ""
     local savePath = options.SavePath or "KeyData.json"
     local onSuccess = options.OnSuccess or function() end
     local onFailed = options.OnFailed or function() end
     local themeName = options.Theme or "Default"
     
-    -- Build config from theme
     local Config = {}
     local baseTheme = Themes[themeName] or Themes.Default
     for k, v in pairs(baseTheme) do
         Config[k] = v
     end
     
-    -- Apply custom overrides
     if options.MainColor then Config.MainColor = options.MainColor end
     if options.SecondaryColor then Config.SecondaryColor = options.SecondaryColor end
     if options.AccentColor then Config.AccentColor = options.AccentColor end
@@ -343,11 +363,9 @@ function KeySystem:Create(options)
     if options.BorderColor then Config.BorderColor = options.BorderColor end
     if options.DiscordColor then Config.DiscordColor = options.DiscordColor end
     
-    -- Remove existing
     local existing = CoreGui:FindFirstChild("KeySystemUI")
     if existing then existing:Destroy() end
     
-    -- Check saved key
     local function CheckSavedKey()
         if not isfile then return false end
         local s, data = pcall(function()
@@ -375,15 +393,13 @@ function KeySystem:Create(options)
         return {}
     end
     
-    -- Sizes
     local frameW = isMobile and 360 or 420
     local frameH = isMobile and 320 or 340
     local titleBarH = isMobile and 56 or 48
     local btnH = isMobile and 38 or 34
     local iconS = isMobile and 16 or 14
     
-    -- Count buttons
-    local hasDiscord = discordLink ~= ""
+    local hasDiscord = discordCode ~= ""
     local hasGetKey = keyLink ~= ""
     local btnCount = 1 + (hasDiscord and 1 or 0) + (hasGetKey and 1 or 0)
     
@@ -392,7 +408,6 @@ function KeySystem:Create(options)
     elseif btnCount == 2 then btnW = isMobile and 140 or 130
     else btnW = isMobile and 100 or 92 end
     
-    -- UI
     local ScreenGui = Create("ScreenGui", {
         Name = "KeySystemUI",
         ResetOnSpawn = false,
@@ -421,7 +436,6 @@ function KeySystem:Create(options)
     AddCorner(MainFrame, 12)
     AddShadow(MainFrame)
     
-    -- TitleBar
     local TitleBar = Create("Frame", {
         Name = "TitleBar",
         BackgroundColor3 = Config.MainColor,
@@ -503,7 +517,6 @@ function KeySystem:Create(options)
         end)
     end)
     
-    -- Content
     local Content = Create("Frame", {
         Name = "Content",
         BackgroundTransparency = 1,
@@ -512,7 +525,6 @@ function KeySystem:Create(options)
         Parent = MainFrame
     })
     
-    -- Center Icon
     local centerSize = isMobile and 60 or 56
     local CenterContainer = Create("Frame", {
         Name = "CenterContainer",
@@ -536,7 +548,6 @@ function KeySystem:Create(options)
         Parent = CenterContainer
     })
     
-    -- Description
     Create("TextLabel", {
         Name = "Description",
         BackgroundTransparency = 1,
@@ -550,7 +561,6 @@ function KeySystem:Create(options)
         Parent = Content
     })
     
-    -- Input
     local inputY = centerSize + 52
     local InputContainer = Create("Frame", {
         Name = "InputContainer",
@@ -597,7 +607,6 @@ function KeySystem:Create(options)
         Tween(InputIcon, {ImageColor3 = Config.SecondaryTextColor})
     end)
     
-    -- Status
     local statusY = inputY + (isMobile and 52 or 48)
     local StatusLabel = Create("TextLabel", {
         Name = "Status",
@@ -611,7 +620,6 @@ function KeySystem:Create(options)
         Parent = Content
     })
     
-    -- Buttons
     local ButtonsContainer = Create("Frame", {
         Name = "Buttons",
         BackgroundTransparency = 1,
@@ -620,10 +628,7 @@ function KeySystem:Create(options)
         Parent = Content
     })
     
-    -- Manually position buttons instead of UIListLayout
     local totalWidth = btnW * btnCount + 8 * (btnCount - 1)
-    local startX = (ButtonsContainer.AbsoluteSize.X - totalWidth) / 2
-    local currentX = 0
     
     local function CreateBtn(name, bgColor, iconName, iconColor, labelText, labelColor, order)
         local xPos = (frameW - 32 - totalWidth) / 2 + order * (btnW + 8)
@@ -669,7 +674,6 @@ function KeySystem:Create(options)
     
     local order = 0
     
-    -- Discord Button
     if hasDiscord then
         local DiscordBtn = CreateBtn("Discord", Config.DiscordColor, "message-circle", Color3.new(1,1,1), btnCount >= 3 and "Discord" or "Join Discord", Color3.new(1,1,1), order)
         order = order + 1
@@ -682,15 +686,17 @@ function KeySystem:Create(options)
         end)
         DiscordBtn.MouseButton1Click:Connect(function()
             AddRipple(DiscordBtn)
-            if setclipboard then
-                setclipboard(discordLink)
-                StatusLabel.Text = "Discord link copied!"
+            local success = JoinDiscord(discordCode)
+            if success then
+                StatusLabel.Text = "Opening Discord invite..."
                 StatusLabel.TextColor3 = Config.DiscordColor
+            else
+                StatusLabel.Text = "Failed to open Discord. Make sure Discord is running."
+                StatusLabel.TextColor3 = Config.ErrorColor
             end
         end)
     end
     
-    -- Get Key Button
     if hasGetKey then
         local GetKeyBtn = CreateBtn("GetKey", Config.SecondaryColor, "external-link", Config.TextColor, "Get Key", Config.TextColor, order)
         order = order + 1
@@ -711,7 +717,6 @@ function KeySystem:Create(options)
         end)
     end
     
-    -- Verify Button
     local VerifyBtn = CreateBtn("Verify", Config.AccentColor, "check", Config.MainColor, "Verify", Config.MainColor, order)
     
     VerifyBtn.MouseEnter:Connect(function()
@@ -787,7 +792,6 @@ function KeySystem:Create(options)
     
     MakeDraggable(MainFrame, TitleBar)
     
-    -- Animate in
     Tween(Background, {BackgroundTransparency = 0.3}, 0.2)
     Tween(MainFrame, {Size = UDim2.new(0, frameW, 0, frameH)}, 0.3)
     
