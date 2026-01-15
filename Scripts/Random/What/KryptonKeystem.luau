@@ -20,6 +20,7 @@ local Config = {
     SuccessColor = Color3.fromRGB(74, 222, 128),
     ErrorColor = Color3.fromRGB(248, 113, 113),
     WarningColor = Color3.fromRGB(251, 191, 36),
+    DiscordColor = Color3.fromRGB(88, 101, 242),
     TweenSpeed = 0.15
 }
 
@@ -45,11 +46,33 @@ local function LoadIcons()
 end
 LoadIcons()
 
+local function IsAssetId(str)
+    if not str then return false end
+    str = tostring(str)
+    if string.match(str, "^rbxassetid://") then return true end
+    if string.match(str, "^rbxasset://") then return true end
+    if string.match(str, "^https?://") then return true end
+    if tonumber(str) then return true end
+    return false
+end
+
 local function GetIcon(name)
     if not name then return "" end
-    local lower = string.lower(tostring(name))
+    
+    local str = tostring(name)
+    
+    -- Check if it's an asset ID or URL
+    if IsAssetId(str) then
+        if tonumber(str) then
+            return "rbxassetid://" .. str
+        end
+        return str
+    end
+    
+    -- Look up in lucide icons
+    local lower = string.lower(str)
     if Icons[lower] then return Icons[lower] end
-    if Icons[name] then return Icons[name] end
+    if Icons[str] then return Icons[str] end
     return Icons["circle"] or ""
 end
 
@@ -145,28 +168,71 @@ local function AddRipple(button)
     end)
 end
 
+local function ParseIconSize(size, default)
+    if not size then return default, default end
+    
+    if type(size) == "number" then
+        return size, size
+    end
+    
+    if type(size) == "table" then
+        return size.X or size[1] or default, size.Y or size[2] or default
+    end
+    
+    if typeof(size) == "Vector2" then
+        return size.X, size.Y
+    end
+    
+    if typeof(size) == "UDim2" then
+        return size.X.Offset, size.Y.Offset
+    end
+    
+    return default, default
+end
+
 function KeySystem:Create(options)
     options = options or {}
     
     local title = options.Title or "Key System"
     local description = options.Description or "Please enter your key to continue"
     local icon = options.Icon or "key"
+    local centerIcon = options.CenterIcon or "lock"
+    local iconSize = options.IconSize
+    local centerIconSize = options.CenterIconSize
     local keys = options.Keys or {}
     local keyLink = options.KeyLink or ""
+    local discordLink = options.DiscordLink or ""
     local savePath = options.SavePath or "KeyData.json"
     local onSuccess = options.OnSuccess or function() end
     local onFailed = options.OnFailed or function() end
     local maxAttempts = options.MaxAttempts or 5
     local lockoutTime = options.LockoutTime or 60
     
-    -- Remove existing key system
+    -- Parse icon sizes
+    local titleIconDefault = isMobile and 24 or 22
+    local centerIconDefault = isMobile and 28 or 24
+    
+    local titleIconSizeX, titleIconSizeY = ParseIconSize(iconSize, titleIconDefault)
+    local centerIconSizeX, centerIconSizeY = ParseIconSize(centerIconSize, centerIconDefault)
+    
+    local centerContainerSize = math.max(centerIconSizeX, centerIconSizeY) + (isMobile and 36 or 32)
+    
+    -- Custom colors
+    if options.MainColor then Config.MainColor = options.MainColor end
+    if options.SecondaryColor then Config.SecondaryColor = options.SecondaryColor end
+    if options.AccentColor then Config.AccentColor = options.AccentColor end
+    if options.TextColor then Config.TextColor = options.TextColor end
+    if options.SecondaryTextColor then Config.SecondaryTextColor = options.SecondaryTextColor end
+    if options.BorderColor then Config.BorderColor = options.BorderColor end
+    if options.DiscordColor then Config.DiscordColor = options.DiscordColor end
+    
+    -- Remove existing
     local existing = CoreGui:FindFirstChild("KeySystemUI")
     if existing then existing:Destroy() end
     
     local attempts = 0
     local lockedOut = false
     
-    -- Check for saved key
     local function CheckSavedKey()
         if not isfile then return nil end
         local success, data = pcall(function()
@@ -191,13 +257,26 @@ function KeySystem:Create(options)
         end)
     end
     
-    -- Check saved key first
     if CheckSavedKey() then
         task.spawn(onSuccess)
         return
     end
     
-    -- Create UI
+    -- Determine button count for sizing
+    local buttonCount = 1 -- Verify is always present
+    if keyLink ~= "" then buttonCount = buttonCount + 1 end
+    if discordLink ~= "" then buttonCount = buttonCount + 1 end
+    
+    local buttonWidth = isMobile and 100 or 95
+    if buttonCount == 2 then
+        buttonWidth = isMobile and 140 or 130
+    elseif buttonCount == 1 then
+        buttonWidth = isMobile and 200 or 180
+    end
+    
+    -- Adjust frame height based on content
+    local frameHeight = isMobile and 340 or 360
+    
     local ScreenGui = Create("ScreenGui", {
         Name = "KeySystemUI",
         ResetOnSpawn = false,
@@ -217,7 +296,7 @@ function KeySystem:Create(options)
     local MainFrame = Create("Frame", {
         Name = "MainFrame",
         BackgroundColor3 = Config.MainColor,
-        Size = isMobile and UDim2.new(0, 340, 0, 320) or UDim2.new(0, 400, 0, 340),
+        Size = isMobile and UDim2.new(0, 360, 0, frameHeight) or UDim2.new(0, 420, 0, frameHeight),
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
         ClipsDescendants = true,
@@ -235,7 +314,7 @@ function KeySystem:Create(options)
         Parent = MainFrame
     })
     
-    local Divider = Create("Frame", {
+    Create("Frame", {
         Name = "Divider",
         BackgroundColor3 = Config.BorderColor,
         Size = UDim2.new(1, 0, 0, 1),
@@ -244,18 +323,21 @@ function KeySystem:Create(options)
         Parent = TitleBar
     })
     
-    local IconLabel = Create("ImageLabel", {
+    local TitleIcon = Create("ImageLabel", {
         Name = "Icon",
         BackgroundTransparency = 1,
         Image = GetIcon(icon),
         ImageColor3 = Config.AccentColor,
-        Size = UDim2.new(0, isMobile and 24 or 22, 0, isMobile and 24 or 22),
+        Size = UDim2.new(0, titleIconSizeX, 0, titleIconSizeY),
         Position = UDim2.new(0, 16, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
+        ScaleType = Enum.ScaleType.Fit,
         Parent = TitleBar
     })
     
-    local TitleLabel = Create("TextLabel", {
+    local titlePosX = 16 + titleIconSizeX + 10
+    
+    Create("TextLabel", {
         Name = "Title",
         BackgroundTransparency = 1,
         Text = title,
@@ -263,8 +345,8 @@ function KeySystem:Create(options)
         FontFace = Fonts.SemiBold,
         TextSize = isMobile and 16 or 14,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Size = UDim2.new(1, -100, 1, 0),
-        Position = UDim2.new(0, isMobile and 50 or 46, 0, 0),
+        Size = UDim2.new(1, -titlePosX - 50, 1, 0),
+        Position = UDim2.new(0, titlePosX, 0, 0),
         Parent = TitleBar
     })
     
@@ -288,6 +370,7 @@ function KeySystem:Create(options)
         Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
+        ScaleType = Enum.ScaleType.Fit,
         Parent = CloseButton
     })
     
@@ -319,30 +402,33 @@ function KeySystem:Create(options)
         Parent = MainFrame
     })
     
-    -- Lock Icon
-    local LockContainer = Create("Frame", {
-        Name = "LockContainer",
+    -- Center Icon Container
+    local CenterContainer = Create("Frame", {
+        Name = "CenterContainer",
         BackgroundColor3 = Config.SecondaryColor,
-        Size = UDim2.new(0, isMobile and 64 or 56, 0, isMobile and 64 or 56),
+        Size = UDim2.new(0, centerContainerSize, 0, centerContainerSize),
         Position = UDim2.new(0.5, 0, 0, 0),
         AnchorPoint = Vector2.new(0.5, 0),
         Parent = Content
     })
-    AddCorner(LockContainer, isMobile and 32 or 28)
+    AddCorner(CenterContainer, centerContainerSize / 2)
     
-    local LockIcon = Create("ImageLabel", {
-        Name = "LockIcon",
+    local CenterIcon = Create("ImageLabel", {
+        Name = "CenterIcon",
         BackgroundTransparency = 1,
-        Image = GetIcon("lock"),
+        Image = GetIcon(centerIcon),
         ImageColor3 = Config.AccentColor,
-        Size = UDim2.new(0, isMobile and 28 or 24, 0, isMobile and 28 or 24),
+        Size = UDim2.new(0, centerIconSizeX, 0, centerIconSizeY),
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
-        Parent = LockContainer
+        ScaleType = Enum.ScaleType.Fit,
+        Parent = CenterContainer
     })
     
+    local descPosY = centerContainerSize + 12
+    
     -- Description
-    local DescLabel = Create("TextLabel", {
+    Create("TextLabel", {
         Name = "Description",
         BackgroundTransparency = 1,
         Text = description,
@@ -351,19 +437,33 @@ function KeySystem:Create(options)
         TextSize = isMobile and 13 or 12,
         TextWrapped = true,
         Size = UDim2.new(1, 0, 0, 40),
-        Position = UDim2.new(0, 0, 0, isMobile and 76 or 68),
+        Position = UDim2.new(0, 0, 0, descPosY),
         Parent = Content
     })
+    
+    local inputPosY = descPosY + 48
     
     -- Input Container
     local InputContainer = Create("Frame", {
         Name = "InputContainer",
         BackgroundColor3 = Config.SecondaryColor,
         Size = UDim2.new(1, 0, 0, isMobile and 48 or 44),
-        Position = UDim2.new(0, 0, 0, isMobile and 128 or 118),
+        Position = UDim2.new(0, 0, 0, inputPosY),
         Parent = Content
     })
     AddCorner(InputContainer, 8)
+    
+    local InputIcon = Create("ImageLabel", {
+        Name = "InputIcon",
+        BackgroundTransparency = 1,
+        Image = GetIcon("key"),
+        ImageColor3 = Config.SecondaryTextColor,
+        Size = UDim2.new(0, isMobile and 18 or 16, 0, isMobile and 18 or 16),
+        Position = UDim2.new(0, 12, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        ScaleType = Enum.ScaleType.Fit,
+        Parent = InputContainer
+    })
     
     local KeyInput = Create("TextBox", {
         Name = "KeyInput",
@@ -376,18 +476,22 @@ function KeySystem:Create(options)
         TextSize = isMobile and 13 or 12,
         TextXAlignment = Enum.TextXAlignment.Left,
         ClearTextOnFocus = false,
-        Size = UDim2.new(1, -24, 1, 0),
-        Position = UDim2.new(0, 12, 0, 0),
+        Size = UDim2.new(1, -48, 1, 0),
+        Position = UDim2.new(0, isMobile and 38 or 36, 0, 0),
         Parent = InputContainer
     })
     
     KeyInput.Focused:Connect(function()
         Tween(InputContainer, {BackgroundColor3 = Config.BorderColor})
+        Tween(InputIcon, {ImageColor3 = Config.AccentColor})
     end)
     
     KeyInput.FocusLost:Connect(function()
         Tween(InputContainer, {BackgroundColor3 = Config.SecondaryColor})
+        Tween(InputIcon, {ImageColor3 = Config.SecondaryTextColor})
     end)
+    
+    local statusPosY = inputPosY + (isMobile and 56 or 52)
     
     -- Status Label
     local StatusLabel = Create("TextLabel", {
@@ -398,7 +502,7 @@ function KeySystem:Create(options)
         FontFace = Fonts.Regular,
         TextSize = isMobile and 11 or 10,
         Size = UDim2.new(1, 0, 0, 16),
-        Position = UDim2.new(0, 0, 0, isMobile and 182 or 168),
+        Position = UDim2.new(0, 0, 0, statusPosY),
         Parent = Content
     })
     
@@ -414,68 +518,136 @@ function KeySystem:Create(options)
     Create("UIListLayout", {
         FillDirection = Enum.FillDirection.Horizontal,
         HorizontalAlignment = Enum.HorizontalAlignment.Center,
-        Padding = UDim.new(0, 10),
+        Padding = UDim.new(0, 8),
         Parent = ButtonsContainer
     })
     
-    -- Get Key Button
-    local GetKeyButton = Create("TextButton", {
-        Name = "GetKey",
-        BackgroundColor3 = Config.SecondaryColor,
-        Size = UDim2.new(0, isMobile and 140 or 130, 1, 0),
-        Text = "",
-        AutoButtonColor = false,
-        Parent = ButtonsContainer
-    })
-    AddCorner(GetKeyButton, 8)
+    -- Discord Button (if link provided)
+    local DiscordButton, DiscordIcon
+    if discordLink ~= "" then
+        DiscordButton = Create("TextButton", {
+            Name = "Discord",
+            BackgroundColor3 = Config.DiscordColor,
+            Size = UDim2.new(0, buttonWidth, 1, 0),
+            Text = "",
+            AutoButtonColor = false,
+            ClipsDescendants = true,
+            Parent = ButtonsContainer
+        })
+        AddCorner(DiscordButton, 8)
+        
+        DiscordIcon = Create("ImageLabel", {
+            BackgroundTransparency = 1,
+            Image = GetIcon("message-circle"),
+            ImageColor3 = Color3.fromRGB(255, 255, 255),
+            Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
+            Position = UDim2.new(0, 12, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            ScaleType = Enum.ScaleType.Fit,
+            Parent = DiscordButton
+        })
+        
+        Create("TextLabel", {
+            BackgroundTransparency = 1,
+            Text = buttonCount == 3 and "Discord" or "Join Discord",
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            FontFace = Fonts.Medium,
+            TextSize = isMobile and 12 or 11,
+            Size = UDim2.new(1, -36, 1, 0),
+            Position = UDim2.new(0, isMobile and 34 or 32, 0, 0),
+            Parent = DiscordButton
+        })
+        
+        DiscordButton.MouseEnter:Connect(function()
+            Tween(DiscordButton, {BackgroundColor3 = Color3.fromRGB(108, 121, 255)})
+        end)
+        
+        DiscordButton.MouseLeave:Connect(function()
+            Tween(DiscordButton, {BackgroundColor3 = Config.DiscordColor})
+        end)
+        
+        DiscordButton.MouseButton1Click:Connect(function()
+            AddRipple(DiscordButton)
+            if setclipboard then
+                setclipboard(discordLink)
+                StatusLabel.Text = "Discord link copied!"
+                StatusLabel.TextColor3 = Config.DiscordColor
+                task.delay(2, function()
+                    if StatusLabel and StatusLabel.Parent and StatusLabel.Text == "Discord link copied!" then
+                        StatusLabel.Text = ""
+                    end
+                end)
+            end
+        end)
+    end
     
-    local GetKeyIcon = Create("ImageLabel", {
-        BackgroundTransparency = 1,
-        Image = GetIcon("external-link"),
-        ImageColor3 = Config.TextColor,
-        Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
-        Position = UDim2.new(0, 14, 0.5, 0),
-        AnchorPoint = Vector2.new(0, 0.5),
-        Parent = GetKeyButton
-    })
-    
-    local GetKeyLabel = Create("TextLabel", {
-        BackgroundTransparency = 1,
-        Text = "Get Key",
-        TextColor3 = Config.TextColor,
-        FontFace = Fonts.Medium,
-        TextSize = isMobile and 13 or 12,
-        Size = UDim2.new(1, -44, 1, 0),
-        Position = UDim2.new(0, isMobile and 38 or 34, 0, 0),
-        Parent = GetKeyButton
-    })
-    
-    GetKeyButton.MouseEnter:Connect(function()
-        Tween(GetKeyButton, {BackgroundColor3 = Config.BorderColor})
-    end)
-    
-    GetKeyButton.MouseLeave:Connect(function()
-        Tween(GetKeyButton, {BackgroundColor3 = Config.SecondaryColor})
-    end)
-    
-    GetKeyButton.MouseButton1Click:Connect(function()
-        AddRipple(GetKeyButton)
-        if keyLink ~= "" then
+    -- Get Key Button (if link provided)
+    local GetKeyButton
+    if keyLink ~= "" then
+        GetKeyButton = Create("TextButton", {
+            Name = "GetKey",
+            BackgroundColor3 = Config.SecondaryColor,
+            Size = UDim2.new(0, buttonWidth, 1, 0),
+            Text = "",
+            AutoButtonColor = false,
+            ClipsDescendants = true,
+            Parent = ButtonsContainer
+        })
+        AddCorner(GetKeyButton, 8)
+        
+        Create("ImageLabel", {
+            BackgroundTransparency = 1,
+            Image = GetIcon("external-link"),
+            ImageColor3 = Config.TextColor,
+            Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
+            Position = UDim2.new(0, 12, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            ScaleType = Enum.ScaleType.Fit,
+            Parent = GetKeyButton
+        })
+        
+        Create("TextLabel", {
+            BackgroundTransparency = 1,
+            Text = buttonCount == 3 and "Get Key" or "Get Key",
+            TextColor3 = Config.TextColor,
+            FontFace = Fonts.Medium,
+            TextSize = isMobile and 12 or 11,
+            Size = UDim2.new(1, -36, 1, 0),
+            Position = UDim2.new(0, isMobile and 34 or 32, 0, 0),
+            Parent = GetKeyButton
+        })
+        
+        GetKeyButton.MouseEnter:Connect(function()
+            Tween(GetKeyButton, {BackgroundColor3 = Config.BorderColor})
+        end)
+        
+        GetKeyButton.MouseLeave:Connect(function()
+            Tween(GetKeyButton, {BackgroundColor3 = Config.SecondaryColor})
+        end)
+        
+        GetKeyButton.MouseButton1Click:Connect(function()
+            AddRipple(GetKeyButton)
             if setclipboard then
                 setclipboard(keyLink)
-                StatusLabel.Text = "Link copied to clipboard!"
+                StatusLabel.Text = "Key link copied!"
                 StatusLabel.TextColor3 = Config.SuccessColor
+                task.delay(2, function()
+                    if StatusLabel and StatusLabel.Parent and StatusLabel.Text == "Key link copied!" then
+                        StatusLabel.Text = ""
+                    end
+                end)
             end
-        end
-    end)
+        end)
+    end
     
     -- Verify Button
     local VerifyButton = Create("TextButton", {
         Name = "Verify",
         BackgroundColor3 = Config.AccentColor,
-        Size = UDim2.new(0, isMobile and 140 or 130, 1, 0),
+        Size = UDim2.new(0, buttonWidth, 1, 0),
         Text = "",
         AutoButtonColor = false,
+        ClipsDescendants = true,
         Parent = ButtonsContainer
     })
     AddCorner(VerifyButton, 8)
@@ -485,8 +657,9 @@ function KeySystem:Create(options)
         Image = GetIcon("check"),
         ImageColor3 = Config.MainColor,
         Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14),
-        Position = UDim2.new(0, 14, 0.5, 0),
+        Position = UDim2.new(0, 12, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
+        ScaleType = Enum.ScaleType.Fit,
         Parent = VerifyButton
     })
     
@@ -495,9 +668,9 @@ function KeySystem:Create(options)
         Text = "Verify",
         TextColor3 = Config.MainColor,
         FontFace = Fonts.Medium,
-        TextSize = isMobile and 13 or 12,
-        Size = UDim2.new(1, -44, 1, 0),
-        Position = UDim2.new(0, isMobile and 38 or 34, 0, 0),
+        TextSize = isMobile and 12 or 11,
+        Size = UDim2.new(1, -36, 1, 0),
+        Position = UDim2.new(0, isMobile and 34 or 32, 0, 0),
         Parent = VerifyButton
     })
     
@@ -525,6 +698,13 @@ function KeySystem:Create(options)
         if inputKey == "" then
             StatusLabel.Text = "Please enter a key!"
             StatusLabel.TextColor3 = Config.WarningColor
+            
+            local originalPos = InputContainer.Position
+            for i = 1, 4 do
+                Tween(InputContainer, {Position = originalPos + UDim2.new(0, i % 2 == 0 and 6 or -6, 0, 0)}, 0.04)
+                task.wait(0.04)
+            end
+            Tween(InputContainer, {Position = originalPos}, 0.04)
             return
         end
         
@@ -537,19 +717,20 @@ function KeySystem:Create(options)
         end
         
         if valid then
-            -- Success animation
             StatusLabel.Text = "Key verified successfully!"
             StatusLabel.TextColor3 = Config.SuccessColor
-            LockIcon.Image = GetIcon("unlock")
-            Tween(LockIcon, {ImageColor3 = Config.SuccessColor})
-            Tween(LockContainer, {BackgroundColor3 = Color3.fromRGB(30, 60, 30)})
+            CenterIcon.Image = GetIcon("unlock")
+            Tween(CenterIcon, {ImageColor3 = Config.SuccessColor})
+            Tween(CenterContainer, {BackgroundColor3 = Color3.fromRGB(30, 60, 30)})
+            Tween(InputIcon, {ImageColor3 = Config.SuccessColor})
+            Tween(InputContainer, {BackgroundColor3 = Color3.fromRGB(30, 60, 30)})
             
             SaveKey(inputKey)
             
-            task.delay(1, function()
-                Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
-                Tween(Background, {BackgroundTransparency = 1}, 0.2)
-                task.delay(0.2, function()
+            task.delay(1.2, function()
+                Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.25)
+                Tween(Background, {BackgroundTransparency = 1}, 0.25)
+                task.delay(0.25, function()
                     ScreenGui:Destroy()
                     task.spawn(onSuccess)
                 end)
@@ -559,19 +740,29 @@ function KeySystem:Create(options)
             StatusLabel.Text = string.format("Invalid key! (%d/%d attempts)", attempts, maxAttempts)
             StatusLabel.TextColor3 = Config.ErrorColor
             
-            -- Shake animation
+            Tween(InputContainer, {BackgroundColor3 = Color3.fromRGB(60, 30, 30)}, 0.1)
+            Tween(InputIcon, {ImageColor3 = Config.ErrorColor}, 0.1)
+            task.delay(0.3, function()
+                if not lockedOut then
+                    Tween(InputContainer, {BackgroundColor3 = Config.SecondaryColor}, 0.2)
+                    Tween(InputIcon, {ImageColor3 = Config.SecondaryTextColor}, 0.2)
+                end
+            end)
+            
             local originalPos = InputContainer.Position
-            for i = 1, 4 do
-                Tween(InputContainer, {Position = originalPos + UDim2.new(0, i % 2 == 0 and 8 or -8, 0, 0)}, 0.05)
-                task.wait(0.05)
+            for i = 1, 6 do
+                Tween(InputContainer, {Position = originalPos + UDim2.new(0, i % 2 == 0 and 8 or -8, 0, 0)}, 0.04)
+                task.wait(0.04)
             end
-            Tween(InputContainer, {Position = originalPos}, 0.05)
+            Tween(InputContainer, {Position = originalPos}, 0.04)
             
             if attempts >= maxAttempts then
                 lockedOut = true
                 StatusLabel.Text = string.format("Locked out! Wait %d seconds...", lockoutTime)
                 Tween(VerifyButton, {BackgroundColor3 = Config.BorderColor})
+                Tween(VerifyIcon, {ImageColor3 = Config.SecondaryTextColor})
                 VerifyLabel.TextColor3 = Config.SecondaryTextColor
+                Tween(CenterIcon, {ImageColor3 = Config.ErrorColor})
                 
                 task.spawn(function()
                     for i = lockoutTime, 1, -1 do
@@ -582,9 +773,16 @@ function KeySystem:Create(options)
                     lockedOut = false
                     attempts = 0
                     StatusLabel.Text = "You can try again now"
-                    StatusLabel.TextColor3 = Config.SecondaryTextColor
+                    StatusLabel.TextColor3 = Config.SuccessColor
                     Tween(VerifyButton, {BackgroundColor3 = Config.AccentColor})
+                    Tween(VerifyIcon, {ImageColor3 = Config.MainColor})
                     VerifyLabel.TextColor3 = Config.MainColor
+                    Tween(CenterIcon, {ImageColor3 = Config.AccentColor})
+                    task.delay(2, function()
+                        if StatusLabel and StatusLabel.Parent and StatusLabel.Text == "You can try again now" then
+                            StatusLabel.Text = ""
+                        end
+                    end)
                 end)
             end
         end
@@ -601,7 +799,6 @@ function KeySystem:Create(options)
         end
     end)
     
-    -- Make draggable
     MakeDraggable(MainFrame, TitleBar)
     
     -- Entrance animation
@@ -609,15 +806,39 @@ function KeySystem:Create(options)
     Background.BackgroundTransparency = 1
     
     Tween(Background, {BackgroundTransparency = 0.3}, 0.2)
-    Tween(MainFrame, {Size = isMobile and UDim2.new(0, 340, 0, 320) or UDim2.new(0, 400, 0, 340)}, 0.3)
+    Tween(MainFrame, {Size = isMobile and UDim2.new(0, 360, 0, frameHeight) or UDim2.new(0, 420, 0, frameHeight)}, 0.3)
     
     return {
         Destroy = function()
-            ScreenGui:Destroy()
+            if ScreenGui and ScreenGui.Parent then
+                ScreenGui:Destroy()
+            end
         end,
         SetStatus = function(text, color)
             StatusLabel.Text = text
             StatusLabel.TextColor3 = color or Config.SecondaryTextColor
+        end,
+        SetIcon = function(newIcon, newSize)
+            TitleIcon.Image = GetIcon(newIcon)
+            if newSize then
+                local sizeX, sizeY = ParseIconSize(newSize, titleIconDefault)
+                TitleIcon.Size = UDim2.new(0, sizeX, 0, sizeY)
+            end
+        end,
+        SetCenterIcon = function(newIcon, newSize)
+            CenterIcon.Image = GetIcon(newIcon)
+            if newSize then
+                local sizeX, sizeY = ParseIconSize(newSize, centerIconDefault)
+                CenterIcon.Size = UDim2.new(0, sizeX, 0, sizeY)
+            end
+        end,
+        SetIconSize = function(newSize)
+            local sizeX, sizeY = ParseIconSize(newSize, titleIconDefault)
+            TitleIcon.Size = UDim2.new(0, sizeX, 0, sizeY)
+        end,
+        SetCenterIconSize = function(newSize)
+            local sizeX, sizeY = ParseIconSize(newSize, centerIconDefault)
+            CenterIcon.Size = UDim2.new(0, sizeX, 0, sizeY)
         end
     }
 end
