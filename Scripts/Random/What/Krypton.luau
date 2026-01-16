@@ -825,11 +825,112 @@ function Library:CreateWindow(options)
     
     CloseButton.MouseButton1Click:Connect(function()
         CreateRipple(CloseButton)
-        Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
-        task.delay(0.2, function()
-            ScreenGui:Destroy()
+        
+        -- Create confirmation dialog
+        local ConfirmDialog = Create("Frame", {
+            Name = "ConfirmDialog",
+            BackgroundColor3 = Config.MainColor,
+            Size = UDim2.new(0, 300, 0, 150),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            ZIndex = 1000,
+            Parent = ScreenGui
+        })
+        AddCorner(ConfirmDialog, 12)
+        AddShadow(ConfirmDialog)
+        
+        local DialogTitle = Create("TextLabel", {
+            Name = "Title",
+            BackgroundTransparency = 1,
+            Text = "Are you sure?",
+            TextColor3 = Config.TextColor,
+            FontFace = Config.BoldFont,
+            TextSize = 18,
+            Size = UDim2.new(1, -20, 0, 40),
+            Position = UDim2.new(0, 10, 0, 10),
+            Parent = ConfirmDialog
+        })
+        
+        local DialogMessage = Create("TextLabel", {
+            Name = "Message",
+            BackgroundTransparency = 1,
+            Text = "Do you want to close Krypton?",
+            TextColor3 = Config.SecondaryTextColor,
+            FontFace = Config.Font,
+            TextSize = 14,
+            Size = UDim2.new(1, -20, 0, 30),
+            Position = UDim2.new(0, 10, 0, 50),
+            Parent = ConfirmDialog
+        })
+        
+        local ButtonContainer = Create("Frame", {
+            Name = "Buttons",
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, -20, 0, 40),
+            Position = UDim2.new(0, 10, 1, -50),
+            Parent = ConfirmDialog
+        })
+        
+        local YesButton = Create("TextButton", {
+            Name = "Yes",
+            BackgroundColor3 = Color3.fromRGB(200, 60, 60),
+            Size = UDim2.new(0.48, 0, 1, 0),
+            Position = UDim2.new(0, 0, 0, 0),
+            Text = "Yes",
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            FontFace = Config.BoldFont,
+            TextSize = 14,
+            AutoButtonColor = false,
+            Parent = ButtonContainer
+        })
+        AddCorner(YesButton, 6)
+        
+        local NoButton = Create("TextButton", {
+            Name = "No",
+            BackgroundColor3 = Config.SecondaryColor,
+            Size = UDim2.new(0.48, 0, 1, 0),
+            Position = UDim2.new(0.52, 0, 0, 0),
+            Text = "No",
+            TextColor3 = Config.TextColor,
+            FontFace = Config.BoldFont,
+            TextSize = 14,
+            AutoButtonColor = false,
+            Parent = ButtonContainer
+        })
+        AddCorner(NoButton, 6)
+        
+        YesButton.MouseButton1Click:Connect(function()
+            ConfirmDialog:Destroy()
+            Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
+            task.delay(0.2, function()
+                ScreenGui:Destroy()
+            end)
+        end)
+        
+        NoButton.MouseButton1Click:Connect(function()
+            Tween(ConfirmDialog, {Size = UDim2.new(0, 0, 0, 0)}, 0.15)
+            task.delay(0.15, function()
+                ConfirmDialog:Destroy()
+            end)
+        end)
+        
+        YesButton.MouseEnter:Connect(function()
+            Tween(YesButton, {BackgroundColor3 = Color3.fromRGB(220, 80, 80)})
+        end)
+        
+        YesButton.MouseLeave:Connect(function()
+            Tween(YesButton, {BackgroundColor3 = Color3.fromRGB(200, 60, 60)})
+        end)
+        
+        NoButton.MouseEnter:Connect(function()
+            Tween(NoButton, {BackgroundColor3 = Config.BorderColor})
+        end)
+        
+        NoButton.MouseLeave:Connect(function()
+            Tween(NoButton, {BackgroundColor3 = Config.SecondaryColor})
         end)
     end)
+
     
     MinimizeButton.MouseEnter:Connect(function()
         Tween(MinimizeButton, {BackgroundColor3 = Config.BorderColor})
