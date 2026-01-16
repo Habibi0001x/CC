@@ -823,116 +823,7 @@ function Library:CreateWindow(options)
         end
     end)
     
-    CloseButton.MouseButton1Click:Connect(function()
-        CreateRipple(CloseButton)
-        
-        -- Create confirmation dialog
-        local ConfirmDialog = Create("Frame", {
-            Name = "ConfirmDialog",
-            BackgroundColor3 = Config.MainColor,
-            Size = UDim2.new(0, 300, 0, 150),
-            Position = UDim2.new(0.5, 0, 0.5, 0),
-            AnchorPoint = Vector2.new(0.5, 0.5),
-            ZIndex = 1000,
-            Parent = ScreenGui
-        })
-        AddCorner(ConfirmDialog, 12)
-        AddShadow(ConfirmDialog)
-        
-        local DialogTitle = Create("TextLabel", {
-            Name = "Title",
-            BackgroundTransparency = 1,
-            Text = "Are you sure?",
-            TextColor3 = Config.TextColor,
-            FontFace = Config.BoldFont,
-            TextSize = 18,
-            Size = UDim2.new(1, -20, 0, 40),
-            Position = UDim2.new(0, 10, 0, 10),
-            Parent = ConfirmDialog
-        })
-        
-        local DialogMessage = Create("TextLabel", {
-            Name = "Message",
-            BackgroundTransparency = 1,
-            Text = "Do you want to close Krypton?",
-            TextColor3 = Config.SecondaryTextColor,
-            FontFace = Config.Font,
-            TextSize = 14,
-            Size = UDim2.new(1, -20, 0, 30),
-            Position = UDim2.new(0, 10, 0, 50),
-            Parent = ConfirmDialog
-        })
-        
-        local ButtonContainer = Create("Frame", {
-            Name = "Buttons",
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1, -20, 0, 40),
-            Position = UDim2.new(0, 10, 1, -50),
-            Parent = ConfirmDialog
-        })
-        
-        local YesButton = Create("TextButton", {
-            Name = "Yes",
-            BackgroundColor3 = Color3.fromRGB(200, 60, 60),
-            Size = UDim2.new(0.48, 0, 1, 0),
-            Position = UDim2.new(0, 0, 0, 0),
-            Text = "Yes",
-            TextColor3 = Color3.fromRGB(255, 255, 255),
-            FontFace = Config.BoldFont,
-            TextSize = 14,
-            AutoButtonColor = false,
-            Parent = ButtonContainer
-        })
-        AddCorner(YesButton, 6)
-        
-        local NoButton = Create("TextButton", {
-            Name = "No",
-            BackgroundColor3 = Config.SecondaryColor,
-            Size = UDim2.new(0.48, 0, 1, 0),
-            Position = UDim2.new(0.52, 0, 0, 0),
-            Text = "No",
-            TextColor3 = Config.TextColor,
-            FontFace = Config.BoldFont,
-            TextSize = 14,
-            AutoButtonColor = false,
-            Parent = ButtonContainer
-        })
-        AddCorner(NoButton, 6)
-        
-        YesButton.MouseButton1Click:Connect(function()
-            ConfirmDialog:Destroy()
-            Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
-            task.delay(0.2, function()
-                ScreenGui:Destroy()
-            end)
-        end)
-        
-        NoButton.MouseButton1Click:Connect(function()
-            Tween(ConfirmDialog, {Size = UDim2.new(0, 0, 0, 0)}, 0.15)
-            task.delay(0.15, function()
-                ConfirmDialog:Destroy()
-            end)
-        end)
-        
-        YesButton.MouseEnter:Connect(function()
-            Tween(YesButton, {BackgroundColor3 = Color3.fromRGB(220, 80, 80)})
-        end)
-        
-        YesButton.MouseLeave:Connect(function()
-            Tween(YesButton, {BackgroundColor3 = Color3.fromRGB(200, 60, 60)})
-        end)
-        
-        NoButton.MouseEnter:Connect(function()
-            Tween(NoButton, {BackgroundColor3 = Config.BorderColor})
-        end)
-        
-        NoButton.MouseLeave:Connect(function()
-            Tween(NoButton, {BackgroundColor3 = Config.SecondaryColor})
-        end)
-    end)
-
-    
-    MinimizeButton.MouseEnter:Connect(function()
+    CloseButton.MouseButton1Click:Connect(function()\r\n        CreateRipple(CloseButton)\r\n        \r\n        local Backdrop = Create(" Frame\, {\r\n Name = \Backdrop\,\r\n BackgroundColor3 = Color3.fromRGB(0, 0, 0),\r\n BackgroundTransparency = 1,\r\n Size = UDim2.new(1, 0, 1, 0),\r\n Position = UDim2.new(0, 0, 0, 0),\r\n ZIndex = 999,\r\n Parent = ScreenGui\r\n })\r\n Tween(Backdrop, {BackgroundTransparency = 0.3}, 0.2)\r\n \r\n local ConfirmDialog = Create(\Frame\, {\r\n Name = \ConfirmDialog\,\r\n BackgroundColor3 = Config.SecondaryColor,\r\n Size = UDim2.new(0, 0, 0, 0),\r\n Position = UDim2.new(0.5, 0, 0.5, 0),\r\n AnchorPoint = Vector2.new(0.5, 0.5),\r\n ZIndex = 1000,\r\n Parent = ScreenGui\r\n })\r\n AddCorner(ConfirmDialog, 12)\r\n AddShadow(ConfirmDialog)\r\n Tween(ConfirmDialog, {Size = UDim2.new(0, 380, 0, 200)}, 0.25)\r\n \r\n OnThemeChange(function()\r\n Tween(ConfirmDialog, {BackgroundColor3 = Config.SecondaryColor})\r\n end)\r\n \r\n local Header = Create(\Frame\, {\r\n Name = \Header\,\r\n BackgroundColor3 = Config.MainColor,\r\n Size = UDim2.new(1, 0, 0, 60),\r\n Position = UDim2.new(0, 0, 0, 0),\r\n Parent = ConfirmDialog\r\n })\r\n AddCorner(Header, 12)\r\n \r\n OnThemeChange(function()\r\n Tween(Header, {BackgroundColor3 = Config.MainColor})\r\n end)\r\n \r\n local HeaderCornerFix = Create(\Frame\, {\r\n BackgroundColor3 = Config.MainColor,\r\n Size = UDim2.new(1, 0, 0, 12),\r\n Position = UDim2.new(0, 0, 1, -12),\r\n BorderSizePixel = 0,\r\n Parent = Header\r\n })\r\n \r\n OnThemeChange(function()\r\n HeaderCornerFix.BackgroundColor3 = Config.MainColor\r\n end)\r\n \r\n local IconFrame = Create(\Frame\, {\r\n Name = \IconFrame\,\r\n BackgroundColor3 = Color3.fromRGB(245, 158, 11),\r\n Size = UDim2.new(0, 36, 0, 36),\r\n Position = UDim2.new(0, 16, 0.5, 0),\r\n AnchorPoint = Vector2.new(0, 0.5),\r\n Parent = Header\r\n })\r\n AddCorner(IconFrame, 18)\r\n \r\n local WarningIcon = Create(\ImageLabel\, {\r\n BackgroundTransparency = 1,\r\n Image = GetIcon(\alert-triangle\),\r\n ImageColor3 = Color3.fromRGB(255, 255, 255),\r\n Size = UDim2.new(0, 20, 0, 20),\r\n Position = UDim2.new(0.5, 0, 0.5, 0),\r\n AnchorPoint = Vector2.new(0.5, 0.5),\r\n Parent = IconFrame\r\n })\r\n \r\n local _DialogTitle = Create(\TextLabel\, {\r\n Name = \Title\,\r\n BackgroundTransparency = 1,\r\n Text = \Confirm Close\,\r\n TextColor3 = Config.TextColor,\r\n FontFace = Config.BoldFont,\r\n TextSize = IsMobile and 16 or 15,\r\n TextXAlignment = Enum.TextXAlignment.Left,\r\n Size = UDim2.new(1, -70, 1, 0),\r\n Position = UDim2.new(0, 60, 0, 0),\r\n Parent = Header\r\n })\r\n \r\n OnThemeChange(function()\r\n Tween(_DialogTitle, {TextColor3 = Config.TextColor})\r\n end)\r\n \r\n local ContentArea = Create(\Frame\, {\r\n Name = \Content\,\r\n BackgroundTransparency = 1,\r\n Size = UDim2.new(1, -32, 0, 60),\r\n Position = UDim2.new(0, 16, 0, 70),\r\n Parent = ConfirmDialog\r\n })\r\n \r\n local _DialogMessage = Create(\TextLabel\, {\r\n Name = \Message\,\r\n BackgroundTransparency = 1,\r\n Text = \Are you sure you want to close Krypton Hub?\,\r\n TextColor3 = Config.SecondaryTextColor,\r\n FontFace = Config.Font,\r\n TextSize = IsMobile and 13 or 12,\r\n TextXAlignment = Enum.TextXAlignment.Left,\r\n TextWrapped = true,\r\n Size = UDim2.new(1, 0, 0, 40),\r\n Position = UDim2.new(0, 0, 0, 0),\r\n Parent = ContentArea\r\n })\r\n \r\n OnThemeChange(function()\r\n Tween(_DialogMessage, {TextColor3 = Config.SecondaryTextColor})\r\n end)\r\n \r\n local SubMessage = Create(\TextLabel\, {\r\n Name = \SubMessage\,\r\n BackgroundTransparency = 1,\r\n Text = \All unsaved settings will be lost.\,\r\n TextColor3 = Config.SecondaryTextColor,\r\n FontFace = Config.Font,\r\n TextSize = IsMobile and 11 or 10,\r\n TextXAlignment = Enum.TextXAlignment.Left,\r\n TextTransparency = 0.4,\r\n Size = UDim2.new(1, 0, 0, 20),\r\n Position = UDim2.new(0, 0, 0, 35),\r\n Parent = ContentArea\r\n })\r\n \r\n OnThemeChange(function()\r\n Tween(SubMessage, {TextColor3 = Config.SecondaryTextColor})\r\n end)\r\n \r\n local ButtonContainer = Create(\Frame\, {\r\n Name = \Buttons\,\r\n BackgroundTransparency = 1,\r\n Size = UDim2.new(1, -32, 0, 44),\r\n Position = UDim2.new(0, 16, 1, -60),\r\n Parent = ConfirmDialog\r\n })\r\n \r\n local CancelButton = Create(\TextButton\, {\r\n Name = \Cancel\,\r\n BackgroundColor3 = Config.MainColor,\r\n Size = UDim2.new(0.48, 0, 1, 0),\r\n Position = UDim2.new(0, 0, 0, 0),\r\n Text = \\,\r\n AutoButtonColor = false,\r\n Parent = ButtonContainer\r\n })\r\n AddCorner(CancelButton, 8)\r\n \r\n OnThemeChange(function()\r\n Tween(CancelButton, {BackgroundColor3 = Config.MainColor})\r\n end)\r\n \r\n local CancelText = Create(\TextLabel\, {\r\n BackgroundTransparency = 1,\r\n Text = \Cancel\,\r\n TextColor3 = Config.TextColor,\r\n FontFace = Config.BoldFont,\r\n TextSize = IsMobile and 13 or 12,\r\n Size = UDim2.new(1, 0, 1, 0),\r\n Parent = CancelButton\r\n })\r\n \r\n OnThemeChange(function()\r\n Tween(CancelText, {TextColor3 = Config.TextColor})\r\n end)\r\n \r\n local CloseConfirmButton = Create(\TextButton\, {\r\n Name = \CloseConfirm\,\r\n BackgroundColor3 = Color3.fromRGB(239, 68, 68),\r\n Size = UDim2.new(0.48, 0, 1, 0),\r\n Position = UDim2.new(0.52, 0, 0, 0),\r\n Text = \\,\r\n AutoButtonColor = false,\r\n Parent = ButtonContainer\r\n })\r\n AddCorner(CloseConfirmButton, 8)\r\n \r\n local CloseText = Create(\TextLabel\, {\r\n BackgroundTransparency = 1,\r\n Text = \Close\,\r\n TextColor3 = Color3.fromRGB(255, 255, 255),\r\n FontFace = Config.BoldFont,\r\n TextSize = IsMobile and 13 or 12,\r\n Size = UDim2.new(1, 0, 1, 0),\r\n Parent = CloseConfirmButton\r\n })\r\n \r\n CloseConfirmButton.MouseButton1Click:Connect(function()\r\n CreateRipple(CloseConfirmButton)\r\n Tween(ConfirmDialog, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)\r\n Tween(Backdrop, {BackgroundTransparency = 1}, 0.2)\r\n task.delay(0.2, function()\r\n Backdrop:Destroy()\r\n Tween(MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)\r\n task.delay(0.2, function()\r\n ScreenGui:Destroy()\r\n end)\r\n end)\r\n end)\r\n \r\n CancelButton.MouseButton1Click:Connect(function()\r\n CreateRipple(CancelButton)\r\n Tween(ConfirmDialog, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)\r\n Tween(Backdrop, {BackgroundTransparency = 1}, 0.2)\r\n task.delay(0.2, function()\r\n Backdrop:Destroy()\r\n ConfirmDialog:Destroy()\r\n end)\r\n end)\r\n \r\n CloseConfirmButton.MouseEnter:Connect(function()\r\n Tween(CloseConfirmButton, {BackgroundColor3 = Color3.fromRGB(220, 38, 38)})\r\n end)\r\n \r\n CloseConfirmButton.MouseLeave:Connect(function()\r\n Tween(CloseConfirmButton, {BackgroundColor3 = Color3.fromRGB(239, 68, 68)})\r\n end)\r\n \r\n CancelButton.MouseEnter:Connect(function()\r\n Tween(CancelButton, {BackgroundColor3 = Config.BorderColor})\r\n end)\r\n \r\n CancelButton.MouseLeave:Connect(function()\r\n Tween(CancelButton, {BackgroundColor3 = Config.MainColor})\r\n end)\r\n end)\r\n\r\n \r\n MinimizeButton.MouseEnter:Connect(function()
         Tween(MinimizeButton, {BackgroundColor3 = Config.BorderColor})
     end)
     
@@ -3463,3 +3354,4 @@ function Library:CreateWindow(options)
 end
 
 return Library 
+
