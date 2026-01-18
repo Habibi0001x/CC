@@ -11,6 +11,8 @@ Library.__index = Library
 
 local IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled
 
+local hookmetamethod = getgenv().hookmetamethod or function(...) return end 
+
 if not getgenv().sizeFix then 
     getgenv().sizeFix = true 
     local oldNewIndex
