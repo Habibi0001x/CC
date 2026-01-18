@@ -1163,20 +1163,23 @@ function Library:CreateWindow(options)
         TitleBar.BackgroundTransparency = transparency
     end
     
+    local tabs = 1
     function Window:CreateTab(options)
         options = options or {}
         local TabName = options.Name or "Tab"
         local TabIconName = options.Icon or "circle"
         
         local TabButton = Create("TextButton", {
-            Name = TabName,
+            Name = tabs,
             BackgroundColor3 = Config.SecondaryColor,
-            BackgroundTransparency = 1,
+            BackgroundTransparency = 0,
             Size = UDim2.new(1, -8, 0, IsMobile and 40 or 36),
             Text = "",
+            LayoutOrder = tabs,
             AutoButtonColor = false,
             Parent = TabScroll
         })
+        tabs = tabs + 1
         AddCorner(TabButton, 8)
         
         local TabIconLabel = Create("ImageLabel", {
@@ -3559,5 +3562,4 @@ function Library:CreateWindow(options)
     return Window
 end
 
-return Library 
-
+return Library
