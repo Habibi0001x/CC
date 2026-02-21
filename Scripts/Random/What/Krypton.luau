@@ -232,10 +232,14 @@ local function GetIcon(name)
     return Icons["circle"] or ""
 end
 
+-- FIX: Setzt immer Name zuerst, damit die hookmetamethod Exclusion für "Title" & "Description" korrekt triggert!
 local function Create(className, properties)
     local instance = Instance.new(className)
+    if properties.Name then
+        instance.Name = properties.Name
+    end
     for prop, value in pairs(properties) do
-        if prop ~= "Parent" then
+        if prop ~= "Parent" and prop ~= "Name" then
             pcall(function()
                 instance[prop] = value
             end)
@@ -623,7 +627,7 @@ function Library:CreateWindow(options)
         Text = Title,
         TextColor3 = Config.TextColor,
         FontFace = Config.BoldFont,
-        TextSize = IsMobile and 16 or 14,
+        TextSize = IsMobile and 18 or 16,
         TextXAlignment = Enum.TextXAlignment.Left,
         Size = UDim2.new(1, -120, 0, 18),
         Position = UDim2.new(0, IsMobile and 46 or 44, 0, Description ~= "" and 10 or 0),
@@ -647,7 +651,7 @@ function Library:CreateWindow(options)
             Text = Description,
             TextColor3 = Config.SecondaryTextColor,
             FontFace = Config.Font,
-            TextSize = IsMobile and 12 or 12,
+            TextSize = IsMobile and 14 or 13,
             TextXAlignment = Enum.TextXAlignment.Left,
             Size = UDim2.new(1, -120, 0, 14),
             Position = UDim2.new(0, IsMobile and 46 or 44, 0, 28),
@@ -842,7 +846,6 @@ function Library:CreateWindow(options)
     CloseButton.MouseButton1Click:Connect(function()
         CreateRipple(CloseButton)
         
-        -- Create backdrop
         local Backdrop = Create("Frame", {
             Name = "Backdrop",
             BackgroundColor3 = Color3.fromRGB(0, 0, 0),
@@ -854,7 +857,6 @@ function Library:CreateWindow(options)
         })
         Tween(Backdrop, {BackgroundTransparency = 0.3}, 0.2)
         
-        -- Create dialog
         local ConfirmDialog = Create("Frame", {
             Name = "ConfirmDialog",
             BackgroundColor3 = Config.SecondaryColor,
@@ -868,7 +870,6 @@ function Library:CreateWindow(options)
         AddShadow(ConfirmDialog)
         Tween(ConfirmDialog, {Size = UDim2.new(0, 380, 0, 200)}, 0.25)
         
-        -- Header
         local DialogHeader = Create("Frame", {
             Name = "Header",
             BackgroundColor3 = Config.MainColor,
@@ -878,7 +879,6 @@ function Library:CreateWindow(options)
         })
         AddCorner(DialogHeader, 12)
         
-        -- Header corner fix
         Create("Frame", {
             BackgroundColor3 = Config.MainColor,
             Size = UDim2.new(1, 0, 0, 12),
@@ -887,7 +887,6 @@ function Library:CreateWindow(options)
             Parent = DialogHeader
         })
         
-        -- Icon
         local DialogIconFrame = Create("Frame", {
             BackgroundColor3 = Color3.fromRGB(245, 158, 11),
             Size = UDim2.new(0, 36, 0, 36),
@@ -907,20 +906,19 @@ function Library:CreateWindow(options)
             Parent = DialogIconFrame
         })
         
-        -- Title
         Create("TextLabel", {
+            Name = "Title",
             BackgroundTransparency = 1,
             Text = "Confirm Close",
             TextColor3 = Config.TextColor,
             FontFace = Config.BoldFont,
-            TextSize = 16,
+            TextSize = 18,
             TextXAlignment = Enum.TextXAlignment.Left,
             Size = UDim2.new(1, -70, 1, 0),
             Position = UDim2.new(0, 60, 0, 0),
             Parent = DialogHeader
         })
         
-        -- Message
         local MessageArea = Create("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, -32, 0, 60),
@@ -929,11 +927,12 @@ function Library:CreateWindow(options)
         })
         
         Create("TextLabel", {
+            Name = "Title",
             BackgroundTransparency = 1,
             Text = "Are you sure you want to close this Hub?",
             TextColor3 = Config.SecondaryTextColor,
             FontFace = Config.Font,
-            TextSize = 13,
+            TextSize = 14,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextWrapped = true,
             Size = UDim2.new(1, 0, 0, 40),
@@ -942,11 +941,12 @@ function Library:CreateWindow(options)
         })
         
         Create("TextLabel", {
+            Name = "Description",
             BackgroundTransparency = 1,
             Text = "All unsaved settings will be lost.",
             TextColor3 = Config.SecondaryTextColor,
             FontFace = Config.Font,
-            TextSize = 11,
+            TextSize = 13,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextTransparency = 0.4,
             Size = UDim2.new(1, 0, 0, 20),
@@ -954,7 +954,6 @@ function Library:CreateWindow(options)
             Parent = MessageArea
         })
         
-        -- Buttons
         local DialogButtonContainer = Create("Frame", {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, -32, 0, 44),
@@ -963,34 +962,33 @@ function Library:CreateWindow(options)
         })
         
         local DialogCancelButton = Create("TextButton", {
-            Name = "Cancel",
+            Name = "Title",
             BackgroundColor3 = Config.MainColor,
             Size = UDim2.new(0.48, 0, 1, 0),
             Position = UDim2.new(0, 0, 0, 0),
             Text = "Cancel",
             TextColor3 = Config.TextColor,
             FontFace = Config.BoldFont,
-            TextSize = 13,
+            TextSize = 14,
             AutoButtonColor = false,
             Parent = DialogButtonContainer
         })
         AddCorner(DialogCancelButton, 8)
         
         local DialogCloseButton = Create("TextButton", {
-            Name = "Close",
+            Name = "Title",
             BackgroundColor3 = Color3.fromRGB(239, 68, 68),
             Size = UDim2.new(0.48, 0, 1, 0),
             Position = UDim2.new(0.52, 0, 0, 0),
             Text = "Close",
             TextColor3 = Color3.fromRGB(255, 255, 255),
             FontFace = Config.BoldFont,
-            TextSize = 13,
+            TextSize = 14,
             AutoButtonColor = false,
             Parent = DialogButtonContainer
         })
         AddCorner(DialogCloseButton, 8)
         
-        -- Handlers
         DialogCancelButton.MouseButton1Click:Connect(function()
             CreateRipple(DialogCancelButton)
             Tween(ConfirmDialog, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
@@ -1014,7 +1012,6 @@ function Library:CreateWindow(options)
             end)
         end)
         
-        -- Hover effects
         DialogCloseButton.MouseEnter:Connect(function()
             Tween(DialogCloseButton, {BackgroundColor3 = Color3.fromRGB(220, 38, 38)})
         end)
@@ -1030,7 +1027,6 @@ function Library:CreateWindow(options)
         end)
     end)
 
-    
     MinimizeButton.MouseEnter:Connect(function()
         Tween(MinimizeButton, {BackgroundColor3 = Config.BorderColor})
     end)
@@ -1195,11 +1191,12 @@ function Library:CreateWindow(options)
         })
         
         local TabLabel = Create("TextLabel", {
+            Name = "Title",
             BackgroundTransparency = 1,
             Text = TabName,
             TextColor3 = Config.SecondaryTextColor,
             FontFace = Config.Font,
-            TextSize = IsMobile and 13 or 12,
+            TextSize = IsMobile and 14 or 13,
             TextXAlignment = Enum.TextXAlignment.Left,
             Size = UDim2.new(1, -42, 1, 0),
             Position = UDim2.new(0, IsMobile and 38 or 36, 0, 0),
@@ -1278,7 +1275,7 @@ function Library:CreateWindow(options)
             local SectionName = options.Name or "Section"
             local SectionDescription = options.Description or ""
             local hasDesc = SectionDescription ~= ""
-            local HeaderHeight = hasDesc and (IsMobile and 44 or 40) or (IsMobile and 32 or 28)
+            local HeaderHeight = hasDesc and (IsMobile and 48 or 44) or (IsMobile and 36 or 32)
             
             local SectionFrame = Create("Frame", {
                 Name = SectionName,
@@ -1294,11 +1291,12 @@ function Library:CreateWindow(options)
             end)
             
             local SectionTitle = Create("TextLabel", {
+                Name = "Title",
                 BackgroundTransparency = 1,
                 Text = SectionName,
                 TextColor3 = Config.TextColor,
                 FontFace = Config.BoldFont,
-                TextSize = IsMobile and 13 or 12,
+                TextSize = IsMobile and 15 or 14,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 Position = UDim2.new(0, 14, 0, hasDesc and 10 or 8),
                 Size = UDim2.new(1, -28, 0, 16),
@@ -1311,14 +1309,15 @@ function Library:CreateWindow(options)
             
             if hasDesc then
                 local SectionDesc = Create("TextLabel", {
+                    Name = "Description",
                     BackgroundTransparency = 1,
                     Text = SectionDescription,
                     TextColor3 = Config.SecondaryTextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 11 or 10,
+                    TextSize = IsMobile and 13 or 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Position = UDim2.new(0, 14, 0, 26),
-                    Size = UDim2.new(1, -28, 0, 12),
+                    Size = UDim2.new(1, -28, 0, 14),
                     TextWrapped = true,
                     TextTruncate = Enum.TextTruncate.AtEnd,
                     Parent = SectionFrame
@@ -1357,11 +1356,12 @@ function Library:CreateWindow(options)
                 local LabelDescription = options.Description or ""
                 local Icon = options.Icon
                 local hasLabelDesc = LabelDescription ~= ""
-                local minHeight = hasLabelDesc and (IsMobile and 36 or 32) or (IsMobile and 24 or 20)
                 
+                -- FIXED: Automatische Größenanpassung benötigt sauberes Padding & mindesthöhen bei Multiline
                 local LabelFrame = Create("Frame", {
+                    Name = "LabelFrame",
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, minHeight),
+                    Size = UDim2.new(1, 0, 0, 0),
                     AutomaticSize = Enum.AutomaticSize.Y,
                     Parent = SectionContent
                 })
@@ -1373,7 +1373,7 @@ function Library:CreateWindow(options)
                         Image = GetIcon(Icon),
                         ImageColor3 = Config.SecondaryTextColor,
                         Size = UDim2.new(0, IsMobile and 16 or 14, 0, IsMobile and 16 or 14),
-                        Position = UDim2.new(0, 4, 0, 4),
+                        Position = UDim2.new(0, 4, 0, 6),
                         Parent = LabelFrame
                     })
                     
@@ -1385,6 +1385,7 @@ function Library:CreateWindow(options)
                 end
                 
                 local TextContainer = Create("Frame", {
+                    Name = "TextContainer",
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, -8 - textOffset, 0, 0),
                     Position = UDim2.new(0, 4 + textOffset, 0, 4),
@@ -1393,27 +1394,30 @@ function Library:CreateWindow(options)
                 })
                 
                 Create("UIListLayout", {
-                    Padding = UDim.new(0, 2),
+                    Padding = UDim.new(0, 4), -- FIX: Verhindert Überlappungen
                     SortOrder = Enum.SortOrder.LayoutOrder,
                     Parent = TextContainer
                 })
                 
                 Create("UIPadding", {
+                    PaddingTop = UDim.new(0, 2),
                     PaddingBottom = UDim.new(0, 6),
                     Parent = TextContainer
                 })
                 
+                -- FIX: Name auf "Title" & "Description" gesetzt, Size Y darf für AutomaticSize nicht 0 sein!
                 local MainLabel = Create("TextLabel", {
+                    Name = "Title",
                     BackgroundTransparency = 1,
                     Text = Text,
                     TextColor3 = Config.TextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 12 or 11,
+                    TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextYAlignment = Enum.TextYAlignment.Top,
                     TextWrapped = true,
                     AutomaticSize = Enum.AutomaticSize.Y,
-                    Size = UDim2.new(1, 0, 0, 0),
+                    Size = UDim2.new(1, 0, 0, 16),
                     LayoutOrder = 1,
                     Parent = TextContainer
                 })
@@ -1425,16 +1429,17 @@ function Library:CreateWindow(options)
                 local DescLabel
                 if hasLabelDesc then
                     DescLabel = Create("TextLabel", {
+                        Name = "Description",
                         BackgroundTransparency = 1,
                         Text = LabelDescription,
                         TextColor3 = Config.SecondaryTextColor,
                         FontFace = Config.Font,
-                        TextSize = IsMobile and 10 or 9,
+                        TextSize = IsMobile and 12 or 11,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         TextYAlignment = Enum.TextYAlignment.Top,
                         TextWrapped = true,
                         AutomaticSize = Enum.AutomaticSize.Y,
-                        Size = UDim2.new(1, 0, 0, 0),
+                        Size = UDim2.new(1, 0, 0, 14),
                         LayoutOrder = 2,
                         Parent = TextContainer
                     })
@@ -1464,7 +1469,7 @@ function Library:CreateWindow(options)
                 local Callback = options.Callback or function() end
                 local Locked = options.Locked or false
                 local hasDesc = ButtonDescription ~= ""
-                local height = hasDesc and (IsMobile and 52 or 46) or (IsMobile and 38 or 34)
+                local height = hasDesc and (IsMobile and 58 or 52) or (IsMobile and 42 or 38)
                 
                 local Button = Create("TextButton", {
                     BackgroundColor3 = Config.MainColor,
@@ -1507,16 +1512,17 @@ function Library:CreateWindow(options)
                 end
                 
                 local ButtonText = Create("TextLabel", {
+                    Name = "Title",
                     BackgroundTransparency = 1,
                     Text = Text,
                     TextColor3 = Locked and Config.LockedTextColor or Config.TextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 12 or 11,
+                    TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Icon and Enum.TextXAlignment.Left or Enum.TextXAlignment.Center,
                     TextWrapped = true,
                     TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, 12 + textOffset, 0, hasDesc and 10 or 0),
-                    Size = UDim2.new(1, -24 - textOffset, 0, hasDesc and 16 or height),
+                    Size = UDim2.new(1, -24 - textOffset, 0, hasDesc and 18 or height),
                     Parent = Button
                 })
                 
@@ -1529,16 +1535,17 @@ function Library:CreateWindow(options)
                 local DescLabel
                 if hasDesc then
                     DescLabel = Create("TextLabel", {
+                        Name = "Description",
                         BackgroundTransparency = 1,
                         Text = ButtonDescription,
                         TextColor3 = Locked and Config.LockedTextColor or Config.SecondaryTextColor,
                         FontFace = Config.Font,
-                        TextSize = IsMobile and 10 or 9,
+                        TextSize = IsMobile and 12 or 11,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         TextWrapped = true,
                         TextTruncate = Enum.TextTruncate.AtEnd,
-                        Position = UDim2.new(0, 12 + textOffset, 0, IsMobile and 26 or 24),
-                        Size = UDim2.new(1, -24 - textOffset, 0, 14),
+                        Position = UDim2.new(0, 12 + textOffset, 0, IsMobile and 30 or 28),
+                        Size = UDim2.new(1, -24 - textOffset, 0, 16),
                         Parent = Button
                     })
                     
@@ -1599,7 +1606,7 @@ function Library:CreateWindow(options)
                 local Locked = options.Locked or false
                 local Flag = options.Flag
                 local hasDesc = ToggleDescription ~= ""
-                local height = hasDesc and (IsMobile and 52 or 46) or (IsMobile and 38 or 34)
+                local height = hasDesc and (IsMobile and 58 or 52) or (IsMobile and 42 or 38)
                 
                 local ToggleFrame = Create("Frame", {
                     BackgroundColor3 = Config.MainColor,
@@ -1632,16 +1639,17 @@ function Library:CreateWindow(options)
                 end
                 
                 local ToggleText = Create("TextLabel", {
+                    Name = "Title",
                     BackgroundTransparency = 1,
                     Text = Text,
                     TextColor3 = Config.TextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 12 or 11,
+                    TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextWrapped = true,
                     TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, 12 + textOffset, 0, hasDesc and 10 or 0),
-                    Size = UDim2.new(1, -70 - textOffset, 0, hasDesc and 16 or height),
+                    Size = UDim2.new(1, -70 - textOffset, 0, hasDesc and 18 or height),
                     Parent = ToggleFrame
                 })
                 
@@ -1651,16 +1659,17 @@ function Library:CreateWindow(options)
                 
                 if hasDesc then
                     local DescLabel = Create("TextLabel", {
+                        Name = "Description",
                         BackgroundTransparency = 1,
                         Text = ToggleDescription,
                         TextColor3 = Config.SecondaryTextColor,
                         FontFace = Config.Font,
-                        TextSize = IsMobile and 10 or 9,
+                        TextSize = IsMobile and 12 or 11,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         TextWrapped = true,
                         TextTruncate = Enum.TextTruncate.AtEnd,
-                        Position = UDim2.new(0, 12 + textOffset, 0, IsMobile and 26 or 24),
-                        Size = UDim2.new(1, -70 - textOffset, 0, 14),
+                        Position = UDim2.new(0, 12 + textOffset, 0, IsMobile and 30 or 28),
+                        Size = UDim2.new(1, -70 - textOffset, 0, 16),
                         Parent = ToggleFrame
                     })
                     
@@ -1761,7 +1770,7 @@ function Library:CreateWindow(options)
                 local Locked = options.Locked or false
                 local Flag = options.Flag
                 local hasDesc = SliderDescription ~= ""
-                local height = hasDesc and (IsMobile and 68 or 60) or (IsMobile and 54 or 48)
+                local height = hasDesc and (IsMobile and 74 or 66) or (IsMobile and 58 or 52)
                 
                 local SliderFrame = Create("Frame", {
                     BackgroundColor3 = Config.MainColor,
@@ -1793,16 +1802,17 @@ function Library:CreateWindow(options)
                 end
                 
                 local SliderText = Create("TextLabel", {
+                    Name = "Title",
                     BackgroundTransparency = 1,
                     Text = Text,
                     TextColor3 = Config.TextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 12 or 11,
+                    TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextWrapped = true,
                     TextTruncate = Enum.TextTruncate.AtEnd,
-                    Position = UDim2.new(0, 12 + textOffset, 0, 6),
-                    Size = UDim2.new(1, -80 - textOffset, 0, 16),
+                    Position = UDim2.new(0, 12 + textOffset, 0, 8),
+                    Size = UDim2.new(1, -80 - textOffset, 0, 18),
                     Parent = SliderFrame
                 })
                 
@@ -1811,14 +1821,15 @@ function Library:CreateWindow(options)
                 end)
                 
                 local ValueLabel = Create("TextLabel", {
+                    Name = "Title",
                     BackgroundTransparency = 1,
                     Text = tostring(Default) .. Suffix,
                     TextColor3 = Config.SecondaryTextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 11 or 10,
+                    TextSize = IsMobile and 13 or 12,
                     TextXAlignment = Enum.TextXAlignment.Right,
-                    Position = UDim2.new(1, -56, 0, 6),
-                    Size = UDim2.new(0, 44, 0, 16),
+                    Position = UDim2.new(1, -56, 0, 8),
+                    Size = UDim2.new(0, 44, 0, 18),
                     Parent = SliderFrame
                 })
                 
@@ -1826,19 +1837,19 @@ function Library:CreateWindow(options)
                     Tween(ValueLabel, {TextColor3 = Config.SecondaryTextColor})
                 end)
                 
-                local descOffset = hasDesc and 12 or 0
                 if hasDesc then
                     local DescLabel = Create("TextLabel", {
+                        Name = "Description",
                         BackgroundTransparency = 1,
                         Text = SliderDescription,
                         TextColor3 = Config.SecondaryTextColor,
                         FontFace = Config.Font,
-                        TextSize = IsMobile and 10 or 9,
+                        TextSize = IsMobile and 12 or 11,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         TextWrapped = true,
                         TextTruncate = Enum.TextTruncate.AtEnd,
-                        Position = UDim2.new(0, 12 + textOffset, 0, 20),
-                        Size = UDim2.new(1, -24 - textOffset, 0, 12),
+                        Position = UDim2.new(0, 12 + textOffset, 0, 26),
+                        Size = UDim2.new(1, -24 - textOffset, 0, 14),
                         Parent = SliderFrame
                     })
                     
@@ -1850,7 +1861,7 @@ function Library:CreateWindow(options)
                 local SliderBar = Create("Frame", {
                     BackgroundColor3 = Config.BorderColor,
                     Size = UDim2.new(1, -24, 0, 6),
-                    Position = UDim2.new(0, 12, 0, (hasDesc and 36 or 28)),
+                    Position = UDim2.new(0, 12, 0, (hasDesc and 46 or 34)),
                     Parent = SliderFrame
                 })
                 AddCorner(SliderBar, 3)
@@ -1974,7 +1985,7 @@ function Library:CreateWindow(options)
                 local Locked = options.Locked or false
                 local Flag = options.Flag
                 local hasDesc = DropdownDescription ~= ""
-                local closedHeight = hasDesc and (IsMobile and 76 or 68) or (IsMobile and 60 or 54)
+                local closedHeight = hasDesc and (IsMobile and 80 or 72) or (IsMobile and 64 or 58)
                 
                 local DropdownHolder = Create("Frame", {
                     BackgroundTransparency = 1,
@@ -2013,16 +2024,17 @@ function Library:CreateWindow(options)
                 end
                 
                 local DropdownText = Create("TextLabel", {
+                    Name = "Title",
                     BackgroundTransparency = 1,
                     Text = Text,
                     TextColor3 = Config.TextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 12 or 11,
+                    TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextWrapped = true,
                     TextTruncate = Enum.TextTruncate.AtEnd,
-                    Position = UDim2.new(0, 12 + textOffset, 0, 6),
-                    Size = UDim2.new(1, -24 - textOffset, 0, 16),
+                    Position = UDim2.new(0, 12 + textOffset, 0, 8),
+                    Size = UDim2.new(1, -24 - textOffset, 0, 18),
                     Parent = DropdownFrame
                 })
                 
@@ -2033,16 +2045,17 @@ function Library:CreateWindow(options)
                 local descOffset = 0
                 if hasDesc then
                     local DescLabel = Create("TextLabel", {
+                        Name = "Description",
                         BackgroundTransparency = 1,
                         Text = DropdownDescription,
                         TextColor3 = Config.SecondaryTextColor,
                         FontFace = Config.Font,
-                        TextSize = IsMobile and 10 or 9,
+                        TextSize = IsMobile and 12 or 11,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         TextWrapped = true,
                         TextTruncate = Enum.TextTruncate.AtEnd,
-                        Position = UDim2.new(0, 12 + textOffset, 0, 20),
-                        Size = UDim2.new(1, -24 - textOffset, 0, 12),
+                        Position = UDim2.new(0, 12 + textOffset, 0, 26),
+                        Size = UDim2.new(1, -24 - textOffset, 0, 14),
                         Parent = DropdownFrame
                     })
                     
@@ -2055,8 +2068,8 @@ function Library:CreateWindow(options)
                 
                 local DropdownButton = Create("TextButton", {
                     BackgroundColor3 = Config.SecondaryColor,
-                    Size = UDim2.new(1, -24, 0, IsMobile and 30 or 26),
-                    Position = UDim2.new(0, 12, 0, (hasDesc and 36 or 26)),
+                    Size = UDim2.new(1, -24, 0, IsMobile and 32 or 28),
+                    Position = UDim2.new(0, 12, 0, (hasDesc and 44 or 30)),
                     Text = "",
                     AutoButtonColor = false,
                     Parent = DropdownFrame
@@ -2079,11 +2092,12 @@ function Library:CreateWindow(options)
                 end
                 
                 local SelectedText = Create("TextLabel", {
+                    Name = "Title",
                     BackgroundTransparency = 1,
                     Text = GetDisplayText(),
                     TextColor3 = Default and Config.TextColor or Config.SecondaryTextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 11 or 10,
+                    TextSize = IsMobile and 13 or 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, 10, 0, 0),
@@ -2243,11 +2257,12 @@ function Library:CreateWindow(options)
                     end)
                     
                     local ItemText = Create("TextLabel", {
+                        Name = "Title",
                         BackgroundTransparency = 1,
                         Text = item,
                         TextColor3 = Config.TextColor,
                         FontFace = Config.Font,
-                        TextSize = IsMobile and 11 or 10,
+                        TextSize = IsMobile and 13 or 12,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         TextTruncate = Enum.TextTruncate.AtEnd,
                         Position = UDim2.new(0, 10, 0, 0),
@@ -2490,7 +2505,7 @@ function Library:CreateWindow(options)
                 local Locked = options.Locked or false
                 local Flag = options.Flag
                 local hasDesc = InputDescription ~= ""
-                local height = hasDesc and (IsMobile and 76 or 68) or (IsMobile and 60 or 54)
+                local height = hasDesc and (IsMobile and 80 or 72) or (IsMobile and 64 or 58)
                 
                 local InputFrame = Create("Frame", {
                     BackgroundColor3 = Config.MainColor,
@@ -2522,16 +2537,17 @@ function Library:CreateWindow(options)
                 end
                 
                 local InputText = Create("TextLabel", {
+                    Name = "Title",
                     BackgroundTransparency = 1,
                     Text = Text,
                     TextColor3 = Config.TextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 12 or 11,
+                    TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextWrapped = true,
                     TextTruncate = Enum.TextTruncate.AtEnd,
-                    Position = UDim2.new(0, 12 + textOffset, 0, 6),
-                    Size = UDim2.new(1, -24 - textOffset, 0, 16),
+                    Position = UDim2.new(0, 12 + textOffset, 0, 8),
+                    Size = UDim2.new(1, -24 - textOffset, 0, 18),
                     Parent = InputFrame
                 })
                 
@@ -2541,16 +2557,17 @@ function Library:CreateWindow(options)
                 
                 if hasDesc then
                     local DescLabel = Create("TextLabel", {
+                        Name = "Description",
                         BackgroundTransparency = 1,
                         Text = InputDescription,
                         TextColor3 = Config.SecondaryTextColor,
                         FontFace = Config.Font,
-                        TextSize = IsMobile and 10 or 9,
+                        TextSize = IsMobile and 12 or 11,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         TextWrapped = true,
                         TextTruncate = Enum.TextTruncate.AtEnd,
-                        Position = UDim2.new(0, 12 + textOffset, 0, 20),
-                        Size = UDim2.new(1, -24 - textOffset, 0, 12),
+                        Position = UDim2.new(0, 12 + textOffset, 0, 26),
+                        Size = UDim2.new(1, -24 - textOffset, 0, 14),
                         Parent = InputFrame
                     })
                     
@@ -2561,8 +2578,8 @@ function Library:CreateWindow(options)
                 
                 local InputContainer = Create("Frame", {
                     BackgroundColor3 = Config.SecondaryColor,
-                    Size = UDim2.new(1, -24, 0, IsMobile and 30 or 26),
-                    Position = UDim2.new(0, 12, 0, (hasDesc and 36 or 26)),
+                    Size = UDim2.new(1, -24, 0, IsMobile and 32 or 28),
+                    Position = UDim2.new(0, 12, 0, (hasDesc and 44 or 30)),
                     Parent = InputFrame
                 })
                 AddCorner(InputContainer, 6)
@@ -2572,13 +2589,14 @@ function Library:CreateWindow(options)
                 end)
                 
                 local TextBox = Create("TextBox", {
+                    Name = "Title",
                     BackgroundTransparency = 1,
                     Text = Default,
                     PlaceholderText = Placeholder,
                     PlaceholderColor3 = Config.SecondaryTextColor,
                     TextColor3 = Config.TextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 11 or 10,
+                    TextSize = IsMobile and 13 or 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextEditable = not Locked,
                     ClearTextOnFocus = false,
@@ -2642,7 +2660,7 @@ function Library:CreateWindow(options)
                 local Locked = options.Locked or false
                 local Flag = options.Flag
                 local hasDesc = ColorDescription ~= ""
-                local closedHeight = hasDesc and (IsMobile and 52 or 46) or (IsMobile and 38 or 34)
+                local closedHeight = hasDesc and (IsMobile and 58 or 52) or (IsMobile and 42 or 38)
                 
                 local ColorHolder = Create("Frame", {
                     BackgroundTransparency = 1,
@@ -2682,16 +2700,17 @@ function Library:CreateWindow(options)
                 end
                 
                 local ColorText = Create("TextLabel", {
+                    Name = "Title",
                     BackgroundTransparency = 1,
                     Text = Text,
                     TextColor3 = Config.TextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 12 or 11,
+                    TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextWrapped = true,
                     TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, 12 + textOffset, 0, hasDesc and 8 or 0),
-                    Size = UDim2.new(1, -70 - textOffset, 0, hasDesc and 16 or closedHeight),
+                    Size = UDim2.new(1, -70 - textOffset, 0, hasDesc and 18 or closedHeight),
                     Parent = ColorFrame
                 })
                 
@@ -2701,16 +2720,17 @@ function Library:CreateWindow(options)
                 
                 if hasDesc then
                     local DescLabel = Create("TextLabel", {
+                        Name = "Description",
                         BackgroundTransparency = 1,
                         Text = ColorDescription,
                         TextColor3 = Config.SecondaryTextColor,
                         FontFace = Config.Font,
-                        TextSize = IsMobile and 10 or 9,
+                        TextSize = IsMobile and 12 or 11,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         TextWrapped = true,
                         TextTruncate = Enum.TextTruncate.AtEnd,
-                        Position = UDim2.new(0, 12 + textOffset, 0, 24),
-                        Size = UDim2.new(1, -70 - textOffset, 0, 12),
+                        Position = UDim2.new(0, 12 + textOffset, 0, 30),
+                        Size = UDim2.new(1, -70 - textOffset, 0, 14),
                         Parent = ColorFrame
                     })
                     
@@ -2927,7 +2947,7 @@ function Library:CreateWindow(options)
                 local Locked = options.Locked or false
                 local Flag = options.Flag
                 local hasDesc = KeybindDescription ~= ""
-                local height = hasDesc and (IsMobile and 52 or 46) or (IsMobile and 38 or 34)
+                local height = hasDesc and (IsMobile and 58 or 52) or (IsMobile and 42 or 38)
                 
                 local KeybindFrame = Create("Frame", {
                     BackgroundColor3 = Config.MainColor,
@@ -2960,16 +2980,17 @@ function Library:CreateWindow(options)
                 end
                 
                 local KeybindText = Create("TextLabel", {
+                    Name = "Title",
                     BackgroundTransparency = 1,
                     Text = Text,
                     TextColor3 = Config.TextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 12 or 11,
+                    TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextWrapped = true,
                     TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, 12 + textOffset, 0, hasDesc and 8 or 0),
-                    Size = UDim2.new(1, -90 - textOffset, 0, hasDesc and 16 or height),
+                    Size = UDim2.new(1, -90 - textOffset, 0, hasDesc and 18 or height),
                     Parent = KeybindFrame
                 })
                 
@@ -2979,16 +3000,17 @@ function Library:CreateWindow(options)
                 
                 if hasDesc then
                     local DescLabel = Create("TextLabel", {
+                        Name = "Description",
                         BackgroundTransparency = 1,
                         Text = KeybindDescription,
                         TextColor3 = Config.SecondaryTextColor,
                         FontFace = Config.Font,
-                        TextSize = IsMobile and 10 or 9,
+                        TextSize = IsMobile and 12 or 11,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         TextWrapped = true,
                         TextTruncate = Enum.TextTruncate.AtEnd,
-                        Position = UDim2.new(0, 12 + textOffset, 0, 24),
-                        Size = UDim2.new(1, -90 - textOffset, 0, 12),
+                        Position = UDim2.new(0, 12 + textOffset, 0, 30),
+                        Size = UDim2.new(1, -90 - textOffset, 0, 14),
                         Parent = KeybindFrame
                     })
                     
@@ -2998,6 +3020,7 @@ function Library:CreateWindow(options)
                 end
                 
                 local KeyButton = Create("TextButton", {
+                    Name = "Title",
                     BackgroundColor3 = Config.SecondaryColor,
                     Size = UDim2.new(0, IsMobile and 64 or 60, 0, IsMobile and 24 or 22),
                     Position = UDim2.new(1, IsMobile and -74 or -70, 0.5, 0),
@@ -3005,7 +3028,7 @@ function Library:CreateWindow(options)
                     Text = Default.Name or "None",
                     TextColor3 = Config.TextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 10 or 9,
+                    TextSize = IsMobile and 12 or 11,
                     AutoButtonColor = false,
                     Parent = KeybindFrame
                 })
@@ -3115,11 +3138,12 @@ function Library:CreateWindow(options)
                 AddCorner(AvatarImage, 100)
 
                 local DisplayNameLabel = Create("TextLabel", {
+                    Name = "Title",
                     BackgroundTransparency = 1,
                     Text = LocalPlayer.DisplayName,
                     TextColor3 = Config.TextColor,
                     FontFace = Config.BoldFont,
-                    TextSize = IsMobile and 14 or 13,
+                    TextSize = IsMobile and 16 or 15,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, IsMobile and 66 or 60, 0, IsMobile and 16 or 14),
@@ -3132,11 +3156,12 @@ function Library:CreateWindow(options)
                 end)
 
                 local UsernameLabel = Create("TextLabel", {
+                    Name = "Description",
                     BackgroundTransparency = 1,
                     Text = "@" .. LocalPlayer.Name,
                     TextColor3 = Config.SecondaryTextColor,
                     FontFace = Config.Font,
-                    TextSize = IsMobile and 11 or 10,
+                    TextSize = IsMobile and 13 or 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Position = UDim2.new(0, IsMobile and 66 or 60, 0, IsMobile and 34 or 30),
                     Size = UDim2.new(1, -(IsMobile and 74 or 68), 0, 14),
@@ -3434,11 +3459,12 @@ function Library:CreateWindow(options)
         })
         
         local TitleLabel = Create("TextLabel", {
+            Name = "Title",
             BackgroundTransparency = 1,
             Text = Title,
             TextColor3 = Config.TextColor,
             FontFace = Config.BoldFont,
-            TextSize = IsMobile and 13 or 12,
+            TextSize = IsMobile and 15 or 14,
             TextXAlignment = Enum.TextXAlignment.Left,
             Position = UDim2.new(0, IsMobile and 46 or 44, 0, IsMobile and 10 or 8),
             Size = UDim2.new(1, IsMobile and -80 or -60, 0, 16),
@@ -3446,11 +3472,12 @@ function Library:CreateWindow(options)
         })
         
         local ContentLabel = Create("TextLabel", {
+            Name = "Description",
             BackgroundTransparency = 1,
             Text = Content,
             TextColor3 = Config.SecondaryTextColor,
             FontFace = Config.Font,
-            TextSize = IsMobile and 11 or 10,
+            TextSize = IsMobile and 13 or 12,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextWrapped = true,
             Position = UDim2.new(0, IsMobile and 46 or 44, 0, IsMobile and 28 or 26),
@@ -3546,7 +3573,7 @@ function Library:CreateWindow(options)
             Text = Title,
             TextColor3 = Config.TextColor,
             FontFace = Config.BoldFont,
-            TextSize = IsMobile and 15 or 14,
+            TextSize = IsMobile and 16 or 15,
             TextXAlignment = Enum.TextXAlignment.Left,
             Position = UDim2.new(0, 20, 0, 18),
             Size = UDim2.new(1, -40, 0, 20),
@@ -3555,12 +3582,12 @@ function Library:CreateWindow(options)
         })
         
         local DialogContent = Create("TextLabel", {
-            Name = "Content",
+            Name = "Description",
             BackgroundTransparency = 1,
             Text = Content,
             TextColor3 = Config.SecondaryTextColor,
             FontFace = Config.Font,
-            TextSize = IsMobile and 12 or 11,
+            TextSize = IsMobile and 13 or 12,
             TextWrapped = true,
             TextYAlignment = Enum.TextYAlignment.Top,
             TextXAlignment = Enum.TextXAlignment.Left,
@@ -3608,13 +3635,13 @@ function Library:CreateWindow(options)
             local isPrimary = i == 1
             
             local Button = Create("TextButton", {
-                Name = "Button" .. i,
+                Name = "Title",
                 BackgroundColor3 = isPrimary and Config.AccentColor or Config.MainColor,
                 Size = UDim2.new(0, IsMobile and 80 or 76, 1, 0),
                 Text = info.Text or "Button",
                 TextColor3 = isPrimary and Config.MainColor or Config.TextColor,
                 FontFace = Config.Font,
-                TextSize = IsMobile and 12 or 11,
+                TextSize = IsMobile and 13 or 12,
                 AutoButtonColor = false,
                 ZIndex = 503,
                 Parent = ButtonContainer
