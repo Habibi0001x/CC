@@ -771,6 +771,7 @@ function Library:CreateWindow(options)
     
     Create("UIListLayout", {
         Padding = UDim.new(0, 2),
+        SortOrder = Enum.SortOrder.LayoutOrder,
         Parent = TabScroll
     })
     
@@ -839,7 +840,6 @@ function Library:CreateWindow(options)
     end)
     
     CloseButton.MouseButton1Click:Connect(function()
-        warn("[Krypton] Close button clicked!")
         CreateRipple(CloseButton)
         
         -- Create backdrop
@@ -930,7 +930,7 @@ function Library:CreateWindow(options)
         
         Create("TextLabel", {
             BackgroundTransparency = 1,
-            Text = "Are you sure you want to close Krypton Hub?",
+            Text = "Are you sure you want to close this Hub?",
             TextColor3 = Config.SecondaryTextColor,
             FontFace = Config.Font,
             TextSize = 13,
@@ -1172,7 +1172,7 @@ function Library:CreateWindow(options)
         local TabIconName = options.Icon or "circle"
         
         local TabButton = Create("TextButton", {
-            Name = tabs,
+            Name = tostring(tabs),
             BackgroundColor3 = Config.SecondaryColor,
             BackgroundTransparency = 0,
             Size = UDim2.new(1, -8, 0, IsMobile and 40 or 36),
@@ -1226,6 +1226,7 @@ function Library:CreateWindow(options)
         
         Create("UIListLayout", {
             Padding = UDim.new(0, 8),
+            SortOrder = Enum.SortOrder.LayoutOrder,
             Parent = TabPage
         })
         
@@ -1337,6 +1338,7 @@ function Library:CreateWindow(options)
             
             Create("UIListLayout", {
                 Padding = UDim.new(0, 1),
+                SortOrder = Enum.SortOrder.LayoutOrder,
                 Parent = SectionContent
             })
             
@@ -3019,6 +3021,69 @@ function Library:CreateWindow(options)
                 end
                 
                 return KeybindAPI
+            end
+            
+            function Section:CreateUserProfile()
+                local LocalPlayer = Players.LocalPlayer
+                local content = ""
+                pcall(function()
+                    content, _ = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+                end)
+
+                local ProfileFrame = Create("Frame", {
+                    BackgroundColor3 = Config.MainColor,
+                    Size = UDim2.new(1, 0, 0, IsMobile and 70 or 60),
+                    Parent = SectionContent
+                })
+                AddCorner(ProfileFrame, 8)
+
+                OnThemeChange(function()
+                    Tween(ProfileFrame, {BackgroundColor3 = Config.MainColor})
+                end)
+
+                local AvatarImage = Create("ImageLabel", {
+                    BackgroundTransparency = 1,
+                    Image = content,
+                    Size = UDim2.new(0, IsMobile and 50 or 44, 0, IsMobile and 50 or 44),
+                    Position = UDim2.new(0, 8, 0.5, 0),
+                    AnchorPoint = Vector2.new(0, 0.5),
+                    Parent = ProfileFrame
+                })
+                AddCorner(AvatarImage, 100)
+
+                local DisplayNameLabel = Create("TextLabel", {
+                    BackgroundTransparency = 1,
+                    Text = LocalPlayer.DisplayName,
+                    TextColor3 = Config.TextColor,
+                    FontFace = Config.BoldFont,
+                    TextSize = IsMobile and 14 or 13,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    Position = UDim2.new(0, IsMobile and 66 or 60, 0, IsMobile and 16 or 14),
+                    Size = UDim2.new(1, -(IsMobile and 74 or 68), 0, 16),
+                    Parent = ProfileFrame
+                })
+
+                OnThemeChange(function()
+                    Tween(DisplayNameLabel, {TextColor3 = Config.TextColor})
+                end)
+
+                local UsernameLabel = Create("TextLabel", {
+                    BackgroundTransparency = 1,
+                    Text = "@" .. LocalPlayer.Name,
+                    TextColor3 = Config.SecondaryTextColor,
+                    FontFace = Config.Font,
+                    TextSize = IsMobile and 11 or 10,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    Position = UDim2.new(0, IsMobile and 66 or 60, 0, IsMobile and 34 or 30),
+                    Size = UDim2.new(1, -(IsMobile and 74 or 68), 0, 14),
+                    Parent = ProfileFrame
+                })
+
+                OnThemeChange(function()
+                    Tween(UsernameLabel, {TextColor3 = Config.SecondaryTextColor})
+                end)
+
+                return ProfileFrame
             end
             
             return Section
