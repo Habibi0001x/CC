@@ -1319,6 +1319,8 @@ function Library:CreateWindow(options)
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Position = UDim2.new(0, 14, 0, 26),
                     Size = UDim2.new(1, -28, 0, 12),
+                    TextWrapped = true,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
                     Parent = SectionFrame
                 })
                 
@@ -1355,11 +1357,12 @@ function Library:CreateWindow(options)
                 local LabelDescription = options.Description or ""
                 local Icon = options.Icon
                 local hasLabelDesc = LabelDescription ~= ""
-                local height = hasLabelDesc and (IsMobile and 36 or 32) or (IsMobile and 24 or 20)
+                local minHeight = hasLabelDesc and (IsMobile and 36 or 32) or (IsMobile and 24 or 20)
                 
                 local LabelFrame = Create("Frame", {
                     BackgroundTransparency = 1,
-                    Size = UDim2.new(1, 0, 0, height),
+                    Size = UDim2.new(1, 0, 0, minHeight),
+                    AutomaticSize = Enum.AutomaticSize.Y,
                     Parent = SectionContent
                 })
                 
@@ -1370,7 +1373,7 @@ function Library:CreateWindow(options)
                         Image = GetIcon(Icon),
                         ImageColor3 = Config.SecondaryTextColor,
                         Size = UDim2.new(0, IsMobile and 16 or 14, 0, IsMobile and 16 or 14),
-                        Position = UDim2.new(0, 4, 0, hasLabelDesc and 3 or 3),
+                        Position = UDim2.new(0, 4, 0, 4),
                         Parent = LabelFrame
                     })
                     
@@ -1381,6 +1384,25 @@ function Library:CreateWindow(options)
                     textOffset = IsMobile and 24 or 22
                 end
                 
+                local TextContainer = Create("Frame", {
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1, -8 - textOffset, 0, 0),
+                    Position = UDim2.new(0, 4 + textOffset, 0, 4),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Parent = LabelFrame
+                })
+                
+                Create("UIListLayout", {
+                    Padding = UDim.new(0, 2),
+                    SortOrder = Enum.SortOrder.LayoutOrder,
+                    Parent = TextContainer
+                })
+                
+                Create("UIPadding", {
+                    PaddingBottom = UDim.new(0, 6),
+                    Parent = TextContainer
+                })
+                
                 local MainLabel = Create("TextLabel", {
                     BackgroundTransparency = 1,
                     Text = Text,
@@ -1388,26 +1410,33 @@ function Library:CreateWindow(options)
                     FontFace = Config.Font,
                     TextSize = IsMobile and 12 or 11,
                     TextXAlignment = Enum.TextXAlignment.Left,
-                    Position = UDim2.new(0, 4 + textOffset, 0, 0),
-                    Size = UDim2.new(1, -8 - textOffset, 0, IsMobile and 18 or 16),
-                    Parent = LabelFrame
+                    TextYAlignment = Enum.TextYAlignment.Top,
+                    TextWrapped = true,
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Size = UDim2.new(1, 0, 0, 0),
+                    LayoutOrder = 1,
+                    Parent = TextContainer
                 })
                 
                 OnThemeChange(function()
                     Tween(MainLabel, {TextColor3 = Config.TextColor})
                 end)
                 
+                local DescLabel
                 if hasLabelDesc then
-                    local DescLabel = Create("TextLabel", {
+                    DescLabel = Create("TextLabel", {
                         BackgroundTransparency = 1,
                         Text = LabelDescription,
                         TextColor3 = Config.SecondaryTextColor,
                         FontFace = Config.Font,
                         TextSize = IsMobile and 10 or 9,
                         TextXAlignment = Enum.TextXAlignment.Left,
-                        Position = UDim2.new(0, 4 + textOffset, 0, IsMobile and 18 or 16),
-                        Size = UDim2.new(1, -8 - textOffset, 0, IsMobile and 14 or 12),
-                        Parent = LabelFrame
+                        TextYAlignment = Enum.TextYAlignment.Top,
+                        TextWrapped = true,
+                        AutomaticSize = Enum.AutomaticSize.Y,
+                        Size = UDim2.new(1, 0, 0, 0),
+                        LayoutOrder = 2,
+                        Parent = TextContainer
                     })
                     
                     OnThemeChange(function()
@@ -1418,6 +1447,11 @@ function Library:CreateWindow(options)
                 return {
                     SetText = function(_, text)
                         MainLabel.Text = text
+                    end,
+                    SetDescription = function(_, text)
+                        if DescLabel then
+                            DescLabel.Text = text
+                        end
                     end
                 }
             end
@@ -1479,6 +1513,8 @@ function Library:CreateWindow(options)
                     FontFace = Config.Font,
                     TextSize = IsMobile and 12 or 11,
                     TextXAlignment = Icon and Enum.TextXAlignment.Left or Enum.TextXAlignment.Center,
+                    TextWrapped = true,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, 12 + textOffset, 0, hasDesc and 10 or 0),
                     Size = UDim2.new(1, -24 - textOffset, 0, hasDesc and 16 or height),
                     Parent = Button
@@ -1499,6 +1535,8 @@ function Library:CreateWindow(options)
                         FontFace = Config.Font,
                         TextSize = IsMobile and 10 or 9,
                         TextXAlignment = Enum.TextXAlignment.Left,
+                        TextWrapped = true,
+                        TextTruncate = Enum.TextTruncate.AtEnd,
                         Position = UDim2.new(0, 12 + textOffset, 0, IsMobile and 26 or 24),
                         Size = UDim2.new(1, -24 - textOffset, 0, 14),
                         Parent = Button
@@ -1600,6 +1638,8 @@ function Library:CreateWindow(options)
                     FontFace = Config.Font,
                     TextSize = IsMobile and 12 or 11,
                     TextXAlignment = Enum.TextXAlignment.Left,
+                    TextWrapped = true,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, 12 + textOffset, 0, hasDesc and 10 or 0),
                     Size = UDim2.new(1, -70 - textOffset, 0, hasDesc and 16 or height),
                     Parent = ToggleFrame
@@ -1617,6 +1657,8 @@ function Library:CreateWindow(options)
                         FontFace = Config.Font,
                         TextSize = IsMobile and 10 or 9,
                         TextXAlignment = Enum.TextXAlignment.Left,
+                        TextWrapped = true,
+                        TextTruncate = Enum.TextTruncate.AtEnd,
                         Position = UDim2.new(0, 12 + textOffset, 0, IsMobile and 26 or 24),
                         Size = UDim2.new(1, -70 - textOffset, 0, 14),
                         Parent = ToggleFrame
@@ -1757,6 +1799,8 @@ function Library:CreateWindow(options)
                     FontFace = Config.Font,
                     TextSize = IsMobile and 12 or 11,
                     TextXAlignment = Enum.TextXAlignment.Left,
+                    TextWrapped = true,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, 12 + textOffset, 0, 6),
                     Size = UDim2.new(1, -80 - textOffset, 0, 16),
                     Parent = SliderFrame
@@ -1791,6 +1835,8 @@ function Library:CreateWindow(options)
                         FontFace = Config.Font,
                         TextSize = IsMobile and 10 or 9,
                         TextXAlignment = Enum.TextXAlignment.Left,
+                        TextWrapped = true,
+                        TextTruncate = Enum.TextTruncate.AtEnd,
                         Position = UDim2.new(0, 12 + textOffset, 0, 20),
                         Size = UDim2.new(1, -24 - textOffset, 0, 12),
                         Parent = SliderFrame
@@ -1973,6 +2019,8 @@ function Library:CreateWindow(options)
                     FontFace = Config.Font,
                     TextSize = IsMobile and 12 or 11,
                     TextXAlignment = Enum.TextXAlignment.Left,
+                    TextWrapped = true,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, 12 + textOffset, 0, 6),
                     Size = UDim2.new(1, -24 - textOffset, 0, 16),
                     Parent = DropdownFrame
@@ -1991,6 +2039,8 @@ function Library:CreateWindow(options)
                         FontFace = Config.Font,
                         TextSize = IsMobile and 10 or 9,
                         TextXAlignment = Enum.TextXAlignment.Left,
+                        TextWrapped = true,
+                        TextTruncate = Enum.TextTruncate.AtEnd,
                         Position = UDim2.new(0, 12 + textOffset, 0, 20),
                         Size = UDim2.new(1, -24 - textOffset, 0, 12),
                         Parent = DropdownFrame
@@ -2199,6 +2249,7 @@ function Library:CreateWindow(options)
                         FontFace = Config.Font,
                         TextSize = IsMobile and 11 or 10,
                         TextXAlignment = Enum.TextXAlignment.Left,
+                        TextTruncate = Enum.TextTruncate.AtEnd,
                         Position = UDim2.new(0, 10, 0, 0),
                         Size = UDim2.new(1, Multi and -32 or -20, 1, 0),
                         ZIndex = 103,
@@ -2477,6 +2528,8 @@ function Library:CreateWindow(options)
                     FontFace = Config.Font,
                     TextSize = IsMobile and 12 or 11,
                     TextXAlignment = Enum.TextXAlignment.Left,
+                    TextWrapped = true,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, 12 + textOffset, 0, 6),
                     Size = UDim2.new(1, -24 - textOffset, 0, 16),
                     Parent = InputFrame
@@ -2494,6 +2547,8 @@ function Library:CreateWindow(options)
                         FontFace = Config.Font,
                         TextSize = IsMobile and 10 or 9,
                         TextXAlignment = Enum.TextXAlignment.Left,
+                        TextWrapped = true,
+                        TextTruncate = Enum.TextTruncate.AtEnd,
                         Position = UDim2.new(0, 12 + textOffset, 0, 20),
                         Size = UDim2.new(1, -24 - textOffset, 0, 12),
                         Parent = InputFrame
@@ -2633,6 +2688,8 @@ function Library:CreateWindow(options)
                     FontFace = Config.Font,
                     TextSize = IsMobile and 12 or 11,
                     TextXAlignment = Enum.TextXAlignment.Left,
+                    TextWrapped = true,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, 12 + textOffset, 0, hasDesc and 8 or 0),
                     Size = UDim2.new(1, -70 - textOffset, 0, hasDesc and 16 or closedHeight),
                     Parent = ColorFrame
@@ -2650,6 +2707,8 @@ function Library:CreateWindow(options)
                         FontFace = Config.Font,
                         TextSize = IsMobile and 10 or 9,
                         TextXAlignment = Enum.TextXAlignment.Left,
+                        TextWrapped = true,
+                        TextTruncate = Enum.TextTruncate.AtEnd,
                         Position = UDim2.new(0, 12 + textOffset, 0, 24),
                         Size = UDim2.new(1, -70 - textOffset, 0, 12),
                         Parent = ColorFrame
@@ -2907,6 +2966,8 @@ function Library:CreateWindow(options)
                     FontFace = Config.Font,
                     TextSize = IsMobile and 12 or 11,
                     TextXAlignment = Enum.TextXAlignment.Left,
+                    TextWrapped = true,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, 12 + textOffset, 0, hasDesc and 8 or 0),
                     Size = UDim2.new(1, -90 - textOffset, 0, hasDesc and 16 or height),
                     Parent = KeybindFrame
@@ -2924,6 +2985,8 @@ function Library:CreateWindow(options)
                         FontFace = Config.Font,
                         TextSize = IsMobile and 10 or 9,
                         TextXAlignment = Enum.TextXAlignment.Left,
+                        TextWrapped = true,
+                        TextTruncate = Enum.TextTruncate.AtEnd,
                         Position = UDim2.new(0, 12 + textOffset, 0, 24),
                         Size = UDim2.new(1, -90 - textOffset, 0, 12),
                         Parent = KeybindFrame
@@ -3058,6 +3121,7 @@ function Library:CreateWindow(options)
                     FontFace = Config.BoldFont,
                     TextSize = IsMobile and 14 or 13,
                     TextXAlignment = Enum.TextXAlignment.Left,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
                     Position = UDim2.new(0, IsMobile and 66 or 60, 0, IsMobile and 16 or 14),
                     Size = UDim2.new(1, -(IsMobile and 74 or 68), 0, 16),
                     Parent = ProfileFrame
