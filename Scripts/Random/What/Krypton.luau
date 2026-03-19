@@ -1409,6 +1409,7 @@ function Library:CreateWindow(options)
                 local MainLabel = Create("TextLabel", {
                     Name = "Title",
                     BackgroundTransparency = 1,
+                    RichText = true,
                     Text = Text,
                     TextColor3 = Config.TextColor,
                     FontFace = Config.Font,
