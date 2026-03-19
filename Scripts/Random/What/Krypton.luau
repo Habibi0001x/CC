@@ -45,16 +45,16 @@ local Themes = {
         LockedTextColor = Color3.fromRGB(80, 80, 80)
     },
     Dark = {
-        MainColor = Color3.fromRGB(12, 12, 12),
-        SecondaryColor = Color3.fromRGB(18, 18, 18),
-        AccentColor = Color3.fromRGB(99, 102, 241),
-        TextColor = Color3.fromRGB(250, 250, 250),
-        SecondaryTextColor = Color3.fromRGB(140, 140, 140),
-        BorderColor = Color3.fromRGB(38, 38, 38),
-        ToggleOnColor = Color3.fromRGB(99, 102, 241),
-        ToggleOffColor = Color3.fromRGB(55, 55, 55),
-        LockedColor = Color3.fromRGB(25, 25, 25),
-        LockedTextColor = Color3.fromRGB(70, 70, 70)
+        MainColor = Color3.fromRGB(20, 20, 20),
+        SecondaryColor = Color3.fromRGB(26, 26, 26),
+        AccentColor = Color3.fromRGB(110, 113, 245),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(160, 160, 160),
+        BorderColor = Color3.fromRGB(50, 50, 50),
+        ToggleOnColor = Color3.fromRGB(110, 113, 245),
+        ToggleOffColor = Color3.fromRGB(65, 65, 65),
+        LockedColor = Color3.fromRGB(35, 35, 35),
+        LockedTextColor = Color3.fromRGB(90, 90, 90)
     },
     Light = {
         MainColor = Color3.fromRGB(255, 255, 255),
@@ -2471,7 +2471,10 @@ function Library:CreateWindow(options)
                             ToggleDropdown()
                         end
                     end,
-                    Refresh = function(_)
+                    Refresh = function(_, newItems)
+                        if newItems and type(newItems) == "table" then
+                            Items = newItems
+                        end
                         for _, btn in pairs(itemButtons) do
                             btn:Destroy()
                         end
@@ -3716,6 +3719,8 @@ function Library:CreateWindow(options)
     function Window:GetConfigs()
         return ConfigSystem:ListConfigs()
     end
+    
+    Window.Flags = ConfigSystem.Flags
     
     return Window
 end
