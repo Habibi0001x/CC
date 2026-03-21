@@ -3182,6 +3182,7 @@ function Library:CreateWindow(options)
             function Section:CreateCharacterView(options)
                 options = options or {}
                 local Height = options.Height or (IsMobile and 180 or 160)
+                local Spinning = options.Spinning ~= false -- Default to true
                 
                 local ViewFrame = Create("Frame", {
                     Name = "CharacterView",
@@ -3243,9 +3244,11 @@ function Library:CreateWindow(options)
                     local angle = 0
                     while task.wait() do
                         if not ViewFrame or not ViewFrame.Parent then break end
-                        angle = angle + 1
-                        if CurrentChar and CurrentChar.PrimaryPart then
-                            CurrentChar:SetPrimaryPartCFrame(CFrame.new(0, 0, 0) * CFrame.Angles(0, math.rad(angle), 0))
+                        if Spinning then
+                            angle = angle + 1
+                            if CurrentChar and CurrentChar.PrimaryPart then
+                                CurrentChar:SetPrimaryPartCFrame(CFrame.new(0, 0, 0) * CFrame.Angles(0, math.rad(angle), 0))
+                            end
                         end
                     end
                 end)
