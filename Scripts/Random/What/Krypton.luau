@@ -3225,7 +3225,7 @@ function Library:CreateWindow(options)
                         local clone = char:Clone()
                         char.Archivable = oldArchivable
                         
-                        clone:SetPrimaryPartCFrame(CFrame.new(0, 0, 0))
+                        clone:SetPrimaryPartCFrame(CFrame.new(0, 0, 0) * CFrame.Angles(0, math.rad(180), 0))
                         clone.Parent = WorldModel
                         CurrentChar = clone
                         
@@ -3241,7 +3241,7 @@ function Library:CreateWindow(options)
                 end)
                 
                 local rotateThread = task.spawn(function()
-                    local angle = 0
+                    local angle = 180
                     while task.wait() do
                         if not ViewFrame or not ViewFrame.Parent then break end
                         if Spinning then
