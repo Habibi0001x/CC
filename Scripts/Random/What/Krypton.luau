@@ -3178,6 +3178,88 @@ function Library:CreateWindow(options)
 
                 return ProfileFrame
             end
+
+            function Section:CreateCharacterView(options)
+                options = options or {}
+                local Height = options.Height or (IsMobile and 180 or 160)
+                
+                local ViewFrame = Create("Frame", {
+                    Name = "CharacterView",
+                    BackgroundColor3 = Config.MainColor,
+                    Size = UDim2.new(1, 0, 0, Height),
+                    Parent = SectionContent
+                })
+                AddCorner(ViewFrame, 10)
+                
+                OnThemeChange(function()
+                    Tween(ViewFrame, {BackgroundColor3 = Config.MainColor})
+                end)
+                
+                local Viewport = Create("ViewportFrame", {
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1, -12, 1, -12),
+                    Position = UDim2.new(0.5, 0, 0.5, 0),
+                    AnchorPoint = Vector2.new(0.5, 0.5),
+                    Parent = ViewFrame
+                })
+                
+                local WorldModel = Create("WorldModel", {
+                    Parent = Viewport
+                })
+                
+                local Camera = Create("Camera", {
+                    FieldOfView = 50,
+                    Parent = Viewport
+                })
+                Viewport.CurrentCamera = Camera
+                
+                local CurrentChar = nil
+                
+                local function UpdateCharacter()
+                    if CurrentChar then CurrentChar:Destroy() end
+                    local char = Players.LocalPlayer.Character
+                    if char then
+                        local oldArchivable = char.Archivable
+                        char.Archivable = true
+                        local clone = char:Clone()
+                        char.Archivable = oldArchivable
+                        
+                        clone:SetPrimaryPartCFrame(CFrame.new(0, 0, 0))
+                        clone.Parent = WorldModel
+                        CurrentChar = clone
+                        
+                        -- Position Camera
+                        Camera.CFrame = CFrame.new(Vector3.new(0, 1.5, 6), Vector3.new(0, 0, 0))
+                    end
+                end
+                
+                UpdateCharacter()
+                local charConn = Players.LocalPlayer.CharacterAdded:Connect(function()
+                    task.wait(0.5)
+                    UpdateCharacter()
+                end)
+                
+                local rotateThread = task.spawn(function()
+                    local angle = 0
+                    while task.wait() do
+                        if not ViewFrame or not ViewFrame.Parent then break end
+                        angle = angle + 1
+                        if CurrentChar and CurrentChar.PrimaryPart then
+                            CurrentChar:SetPrimaryPartCFrame(CFrame.new(0, 0, 0) * CFrame.Angles(0, math.rad(angle), 0))
+                        end
+                    end
+                end)
+                
+                ViewFrame.Destroying:Connect(function()
+                    charConn:Disconnect()
+                    task.cancel(rotateThread)
+                end)
+                
+                return {
+                    Frame = ViewFrame,
+                    Refresh = UpdateCharacter
+                }
+            end
             
             return Section
         end
