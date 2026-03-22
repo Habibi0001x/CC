@@ -142,4 +142,4 @@ pcall(function()
     end)
 end)
 
-print("Loaded")
+print("[SECURITY] Checks Loaded")
