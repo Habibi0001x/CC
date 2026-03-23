@@ -2,14 +2,27 @@ local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local player = Players.LocalPlayer
 
+local hasKicked = false
 local function kick(reason)
+    if hasKicked then return end
+    hasKicked = true
+    
     reason = reason or "Behaviour flagged !"
     
     local executor = (identifyexecutor and identifyexecutor()) or "Unknown Executor"
     local accountAge = tostring(player.AccountAge) .. " days"
     local username = player.Name
     local userId = player.UserId
-    local thumbnailUrl = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=420&height=420&format=png"
+    local thumbnailUrl = ""
+    
+    pcall(function()
+        local HttpService = game:GetService("HttpService")
+        local res = game:HttpGet("https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=" .. userId .. "&size=420x420&format=Png&isCircular=false")
+        local data = HttpService:JSONDecode(res)
+        if data and data.data and data.data[1] then
+            thumbnailUrl = data.data[1].imageUrl
+        end
+    end)
 
     local data = {
         ["content"] = "",
