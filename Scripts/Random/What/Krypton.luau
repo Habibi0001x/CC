@@ -219,17 +219,22 @@ local function LoadIcons()
 end
 
 LoadIcons()
+Icons["ronix"] = "rbxassetid://107132510179311"
 
 local function GetIcon(name)
     if not name then return "" end
-    local lowerName = string.lower(tostring(name))
+    local strName = tostring(name)
+    if strName:match("^rbxassetid://") or strName:match("^rbxasset://") or strName:match("^http://") or strName:match("^https://") then
+        return strName
+    end
+    local lowerName = string.lower(strName)
     if Icons[lowerName] then
         return Icons[lowerName]
     end
     if Icons[name] then
         return Icons[name]
     end
-    return Icons["circle"] or ""
+    return Icons["circle"] or "" -- // <- rbxassetid://107132510179311
 end
 
 -- FIX: Setzt immer Name zuerst, damit die hookmetamethod Exclusion für "Title" & "Description" korrekt triggert!
