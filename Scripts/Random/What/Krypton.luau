@@ -893,7 +893,7 @@ function Library:CreateWindow(options)
         })
         
         local DialogIconFrame = Create("Frame", {
-            BackgroundColor3 = Color3.fromRGB(245, 158, 11),
+            BackgroundColor3 = Color3.fromRGB(104, 104, 104),
             Size = UDim2.new(0, 36, 0, 36),
             Position = UDim2.new(0, 16, 0.5, 0),
             AnchorPoint = Vector2.new(0, 0.5),
