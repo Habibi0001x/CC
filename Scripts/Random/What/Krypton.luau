@@ -234,7 +234,7 @@ local function GetIcon(name)
     if Icons[name] then
         return Icons[name]
     end
-    return Icons["circle"] or "" -- // <- rbxassetid://107132510179311
+    return Icons["ronix"] or "" -- // <- rbxassetid://107132510179311
 end
 
 -- FIX: Setzt immer Name zuerst, damit die hookmetamethod Exclusion für "Title" & "Description" korrekt triggert!
@@ -616,7 +616,7 @@ function Library:CreateWindow(options)
         BackgroundTransparency = 1,
         Image = GetIcon(WindowIcon),
         ImageColor3 = Config.TextColor,
-        Size = UDim2.new(0, IsMobile and 22 or 20, 0, IsMobile and 22 or 20),
+        Size = UDim2.new(0, IsMobile and 30 or 28, 0, IsMobile and 30 or 28),
         Position = UDim2.new(0, 16, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
         Parent = TitleBar
@@ -634,13 +634,13 @@ function Library:CreateWindow(options)
         FontFace = Config.BoldFont,
         TextSize = IsMobile and 18 or 16,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Size = UDim2.new(1, -120, 0, 18),
-        Position = UDim2.new(0, IsMobile and 46 or 44, 0, Description ~= "" and 10 or 0),
+        Size = UDim2.new(1, -130, 0, 18),
+        Position = UDim2.new(0, IsMobile and 56 or 54, 0, Description ~= "" and 10 or 0),
         Parent = TitleBar
     })
     
     if Description == "" then
-        TitleLabel.Position = UDim2.new(0, IsMobile and 46 or 44, 0.5, 0)
+        TitleLabel.Position = UDim2.new(0, IsMobile and 56 or 54, 0.5, 0)
         TitleLabel.AnchorPoint = Vector2.new(0, 0.5)
     end
     
@@ -658,8 +658,8 @@ function Library:CreateWindow(options)
             FontFace = Config.Font,
             TextSize = IsMobile and 14 or 13,
             TextXAlignment = Enum.TextXAlignment.Left,
-            Size = UDim2.new(1, -120, 0, 14),
-            Position = UDim2.new(0, IsMobile and 46 or 44, 0, 28),
+            Size = UDim2.new(1, -130, 0, 14),
+            Position = UDim2.new(0, IsMobile and 56 or 54, 0, 28),
             Parent = TitleBar
         })
         
@@ -1170,7 +1170,7 @@ function Library:CreateWindow(options)
     function Window:CreateTab(options)
         options = options or {}
         local TabName = options.Name or "Tab"
-        local TabIconName = options.Icon or "circle"
+        local TabIconName = options.Icon or "ronix"
         
         local TabButton = Create("TextButton", {
             Name = tostring(tabs),
